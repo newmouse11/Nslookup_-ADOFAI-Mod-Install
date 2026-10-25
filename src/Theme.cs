@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
-namespace OneClick
+namespace AdofaiModInstaller
 {
     // BINANCE-STYLE.md 토큰을 그대로 옮긴 색/글꼴. 이 파일 밖에서는 원시 색상값을 쓰지 않는다.
     internal static class Theme
@@ -99,3 +99,4 @@ namespace OneClick
         }
     }
 }
+

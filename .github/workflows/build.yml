@@ -1,0 +1,56 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write   # 태그 빌드에서 릴리스 파일을 올릴 때 필요
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build src/AdofaiModInstaller.csproj -c Release -o out
+
+      - name: Self test (no game files needed)
+        shell: pwsh
+        run: |
+          $p = Start-Process out/ADOFAI-Mod-Installer.exe -ArgumentList '/selftest','/log:selftest.log' -PassThru
+          if (-not $p.WaitForExit(120000)) { $p.Kill(); throw 'selftest timeout' }
+          Get-Content selftest.log
+          if ($p.ExitCode -ne 0) { throw "selftest failed ($($p.ExitCode))" }
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          Get-FileHash out/ADOFAI-Mod-Installer.exe -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash.ToLower())  ADOFAI-Mod-Installer.exe" } |
+            Set-Content out/SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ADOFAI-Mod-Installer
+          path: |
+            out/ADOFAI-Mod-Installer.exe
+            out/SHA256SUMS.txt
+
+      - name: Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            out/ADOFAI-Mod-Installer.exe
+            out/SHA256SUMS.txt

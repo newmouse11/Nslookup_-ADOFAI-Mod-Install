@@ -3,22 +3,24 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net48</TargetFramework>
     <LangVersion>12</LangVersion>
-    <AssemblyName>ADOFAI-OneClick-Installer</AssemblyName>
-    <RootNamespace>OneClick</RootNamespace>
+    <AssemblyName>ADOFAI-Mod-Installer</AssemblyName>
+    <RootNamespace>AdofaiModInstaller</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Deterministic>true</Deterministic>
     <DebugType>none</DebugType>
     <Prefer32Bit>false</Prefer32Bit>
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <Version>1.0.0.0</Version>
-    <Product>ADOFAI one-click installer</Product>
+    <Product>ADOFAI Mod Installer</Product>
+    <Copyright>Copyright (c) 2026 newmouse11</Copyright>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression" />
-    <EmbeddedResource Include="payload.zip" LogicalName="payload.zip" />
-    <EmbeddedResource Include="manifest.txt" LogicalName="manifest.txt" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <EmbeddedResource Include="catalog.json" LogicalName="catalog.json" />
   </ItemGroup>
 </Project>
