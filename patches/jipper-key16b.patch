@@ -1,0 +1,101 @@
+diff --git a/JipperResourcePack/KeyViewerContents/KeyViewer.cs b/JipperResourcePack/KeyViewerContents/KeyViewer.cs
+index b4bca35..a59bece 100644
+--- a/JipperResourcePack/KeyViewerContents/KeyViewer.cs
++++ b/JipperResourcePack/KeyViewerContents/KeyViewer.cs
+@@ -148,9 +148,9 @@ public partial class KeyViewer : Feature {
+         settingGUI.AddSettingSliderFloat(ref settings.rainSpeed, 100, ref _rainSizeString, localization["keyViewer.rainSpeed"], 1, 800);
+         settingGUI.AddSettingSliderFloat(ref settings.rainHeight, 200, ref _rainHeightString, localization["keyViewer.rainHeight"], 1, 1000);
+         settingGUI.AddSettingToggle(ref settings.AutoSetupKeyLimit, localization["keyViewer.autoSetupKeyLimit"], UpdateKeyLimit);
+-        settingGUI.AddSettingEnum(ref settings.KeyViewerStyle, localization["keyViewer.style"], [KeyviewerStyle.Key10, KeyviewerStyle.Key12, KeyviewerStyle.Key16, KeyviewerStyle.Key20], ChangeKeyViewer);
++        settingGUI.AddSettingEnum(ref settings.KeyViewerStyle, localization["keyViewer.style"], [KeyviewerStyle.Key10, KeyviewerStyle.Key12, KeyviewerStyle.Key16, KeyviewerStyle.Key16B, KeyviewerStyle.Key20], ChangeKeyViewer);
+         settingGUI.AddSettingEnum(ref settings.FootKeyViewerStyle, localization["keyViewer.style"], ResetFootKeyViewer);
+-        if(settings.KeyViewerStyle == KeyviewerStyle.Key16)
++        if(settings.KeyViewerStyle is KeyviewerStyle.Key16 or KeyviewerStyle.Key16B)
+             settingGUI.AddSettingToggle(ref settings.ShowTotalKpsKey16, localization["keyViewer.showTotalKps"], ResetKeyViewer);
+         settingGUI.AddSettingSliderFloat(ref settings.Size, 1, ref _sizeString, localization["size"], 0, 2, () => {
+             KeyViewerSizeObject.transform.localScale = new Vector3(settings.Size, settings.Size, 1);
+@@ -396,6 +396,7 @@ public partial class KeyViewer : Feature {
+         return Settings.KeyViewerStyle switch {
+             KeyviewerStyle.Key12 => Settings.key12,
+             KeyviewerStyle.Key16 => Settings.key16,
++            KeyviewerStyle.Key16B => Settings.key16B,
+             KeyviewerStyle.Key20 => Settings.key20,
+             KeyviewerStyle.Key10 => Settings.key10,
+             _ => throw new ArgumentOutOfRangeException()
+@@ -406,6 +407,7 @@ public partial class KeyViewer : Feature {
+         return Settings.KeyViewerStyle switch {
+             KeyviewerStyle.Key12 => Settings.GhostKey12,
+             KeyviewerStyle.Key16 => Settings.GhostKey16,
++            KeyviewerStyle.Key16B => Settings.GhostKey16B,
+             KeyviewerStyle.Key20 => Settings.GhostKey20,
+             KeyviewerStyle.Key10 => Settings.GhostKey10,
+             _ => throw new ArgumentOutOfRangeException()
+@@ -427,6 +429,7 @@ public partial class KeyViewer : Feature {
+         return Settings.KeyViewerStyle switch {
+             KeyviewerStyle.Key12 => Settings.key12Text,
+             KeyviewerStyle.Key16 => Settings.key16Text,
++            KeyviewerStyle.Key16B => Settings.key16BText,
+             KeyviewerStyle.Key20 => Settings.key20Text,
+             KeyviewerStyle.Key10 => Settings.key10Text,
+             _ => throw new ArgumentOutOfRangeException()
+@@ -436,7 +439,7 @@ public partial class KeyViewer : Feature {
+     private static byte[] GetBackSequence() {
+         return Settings.KeyViewerStyle switch {
+             KeyviewerStyle.Key12 => BackSequence12,
+-            KeyviewerStyle.Key16 => BackSequence16,
++            KeyviewerStyle.Key16 or KeyviewerStyle.Key16B => BackSequence16,
+             KeyviewerStyle.Key20 => BackSequence20,
+             KeyviewerStyle.Key10 => BackSequence10,
+             _ => throw new ArgumentOutOfRangeException()
+@@ -688,6 +691,10 @@ public partial class KeyViewer : Feature {
+                     keyCode2 = settings.key16;
+                     keyText2 = settings.key16Text;
+                     break;
++                case KeyviewerStyle.Key16B:
++                    keyCode2 = settings.key16B;
++                    keyText2 = settings.key16BText;
++                    break;
+                 case KeyviewerStyle.Key20:
+                     keyCode2 = settings.key20;
+                     keyText2 = settings.key20Text;
+@@ -737,6 +744,7 @@ public partial class KeyViewer : Feature {
+                 Initialize0KeyViewer();
+                 break;
+             case KeyviewerStyle.Key16:
++            case KeyviewerStyle.Key16B:
+                 Initialize1KeyViewer();
+                 break;
+             case KeyviewerStyle.Key20:
+diff --git a/JipperResourcePack/KeyViewerContents/KeyViewerSetting.cs b/JipperResourcePack/KeyViewerContents/KeyViewerSetting.cs
+index dd9f01c..2da7ed3 100644
+--- a/JipperResourcePack/KeyViewerContents/KeyViewerSetting.cs
++++ b/JipperResourcePack/KeyViewerContents/KeyViewerSetting.cs
+@@ -43,6 +43,14 @@ public class KeyViewerSetting : JASetting {
+     public string[] key20Text = new string[20];
+     public KeyCode[] GhostKey20 = new KeyCode[20];
+ 
++    // 두 번째 16키 프리셋 (Key16과 같은 레이아웃, 키 배치만 따로 저장)
++    public KeyCode[] key16B = [
++        KeyCode.Tab, KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.E, KeyCode.P, KeyCode.Equals, KeyCode.Backspace, KeyCode.Backslash,
++        KeyCode.Space, KeyCode.C, KeyCode.Comma, KeyCode.Period, KeyCode.CapsLock, KeyCode.LeftShift, KeyCode.Return, KeyCode.H
++    ];
++    public string[] key16BText = new string[16];
++    public KeyCode[] GhostKey16B = new KeyCode[16];
++
+     public KeyCode[] footkey2 = [KeyCode.F8, KeyCode.F3];
+     public KeyCode[] footkey4 = [KeyCode.F8, KeyCode.F3, KeyCode.F7, KeyCode.F2];
+     public KeyCode[] footkey6 = [KeyCode.F8, KeyCode.F3, KeyCode.F7, KeyCode.F2, KeyCode.F6, KeyCode.F1];
+diff --git a/JipperResourcePack/KeyViewerContents/KeyviewerStyle.cs b/JipperResourcePack/KeyViewerContents/KeyviewerStyle.cs
+index 56f2ca4..fc5c6f0 100644
+--- a/JipperResourcePack/KeyViewerContents/KeyviewerStyle.cs
++++ b/JipperResourcePack/KeyViewerContents/KeyviewerStyle.cs
+@@ -4,5 +4,7 @@ public enum KeyviewerStyle {
+     Key12,
+     Key16,
+     Key20,
+-    Key10
++    Key10,
++    // 16키 레이아웃을 쓰는 두 번째 키 배치 프리셋. 값 4로 끝에 추가해 기존 설정값(0~3)과 호환된다.
++    Key16B
+ }
+\ No newline at end of file

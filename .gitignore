@@ -1,0 +1,12 @@
+# 패키징 산출물: 서드파티 모드 바이너리가 들어 있어 저장소에 올리지 않는다
+src/payload.zip
+src/manifest.txt
+
+# 빌드 결과
+bin/
+obj/
+out/
+*.exe
+
+# 로그
+*.log
