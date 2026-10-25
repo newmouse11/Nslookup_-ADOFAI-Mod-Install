@@ -51,6 +51,18 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
+          generate_release_notes: true
+          body: |
+            ## 받는 파일
+
+            - `ADOFAI-Mod-Installer.exe`: 설치기 (Windows, .NET Framework 4.8 필요 — Windows 10/11에 기본 포함)
+            - `SHA256SUMS.txt`: 위 파일의 SHA-256. 확인: `certutil -hashfile ADOFAI-Mod-Installer.exe SHA256`
+
+            ## 알아둘 점
+
+            - 코드 서명이 없어 SmartScreen/백신이 경고할 수 있습니다. 소스와 빌드 기록(Actions)은 이 저장소에서 확인할 수 있습니다.
+            - 설치기는 모드 파일을 포함하지 않고 공식 배포처에서 받아 SHA-256을 확인한 뒤 설치합니다. 출처와 라이선스는 `NOTICE.md`를 보세요.
+            - UnityModManager는 배포처의 현재 파일(0.33.2)을 설치합니다. 설치한 모드가 실제 게임에서 로드되는지는 아직 확인하지 못했습니다.
           files: |
             out/ADOFAI-Mod-Installer.exe
             out/SHA256SUMS.txt
