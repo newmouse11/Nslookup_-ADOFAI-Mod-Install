@@ -65,6 +65,23 @@ dotnet build src\AdofaiModInstaller.csproj -c Release
 
 결과: `src\bin\Release\net48\ADOFAI-Mod-Installer.exe`. 태그(`v*`)를 푸시하면 GitHub Actions가 빌드·자체 검사를 거쳐 실행 파일과 SHA-256 체크섬을 릴리스에 올립니다.
 
+## 파란 창(Windows SmartScreen)이 뜰 때
+
+브라우저로 받은 exe를 처음 실행하면 "Windows에서 PC를 보호했습니다" 같은 **파란 창**이 뜰 수 있습니다. 이 설치기에 코드 서명이 아직 없고 이용자가 적어서 SmartScreen이 모르는 파일로 취급하기 때문이며, 악성으로 판정했다는 뜻은 아닙니다.
+
+1. 받은 파일이 릴리스의 `SHA256SUMS.txt`와 같은 파일인지 확인합니다.
+
+   ```powershell
+   Get-FileHash .\ADOFAI-Mod-Installer.exe -Algorithm SHA256
+   ```
+
+2. 해시가 같으면 파란 창에서 `추가 정보` → `실행`을 누릅니다.
+3. 창이 뜨기 전에 없애려면 exe를 우클릭 → `속성` → 아래쪽 `차단 해제`에 체크 → `확인`을 누릅니다. (인터넷에서 받았다는 표식이 지워집니다.)
+
+해시가 다르거나 이 저장소의 릴리스가 아닌 곳에서 받았다면 실행하지 마세요. 경고를 없애려고 SmartScreen이나 백신을 끄지 마세요. 백신이 따로 경고하면 같은 방법으로 해시를 확인한 뒤 본인이 판단해 예외를 추가하세요.
+
+**코드 서명 계획:** SignPath Foundation의 무료 오픈소스 코드 서명을 신청할 준비 중입니다(아직 신청·승인 전). 서명 정책 초안은 [docs/CODE_SIGNING_POLICY.md](docs/CODE_SIGNING_POLICY.md)에 있습니다. 서명이 적용돼도 이용자가 쌓이기 전에는 경고가 한동안 남을 수 있습니다.
+
 ## 카탈로그 수정 (구성요소 추가)
 
 `src/catalog.json`에 항목을 추가하고 다시 빌드하거나, `/catalog:`로 다른 파일을 지정합니다.

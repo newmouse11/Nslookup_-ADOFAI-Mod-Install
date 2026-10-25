@@ -70,7 +70,11 @@ jobs:
 
             ## 알아둘 점
 
-            - 코드 서명이 없어 SmartScreen/백신이 경고할 수 있습니다. 소스와 빌드 기록(Actions)은 이 저장소에서 확인할 수 있습니다.
+            - **파란 창이 뜨면:** 코드 서명이 아직 없고 이용자가 적어서 브라우저로 받은 exe를 처음 실행할 때 Windows SmartScreen("Windows에서 PC를 보호했습니다")이 뜰 수 있습니다. 악성 판정이 아니라 "모르는 파일"이라는 뜻입니다.
+              1. `Get-FileHash .\ADOFAI-Mod-Installer.exe` 값이 `SHA256SUMS.txt`와 같은지 확인합니다.
+              2. 같으면 `추가 정보` → `실행`을 누릅니다. 창이 뜨기 전에 없애려면 exe 우클릭 → `속성` → `차단 해제` → `확인`.
+              3. 해시가 다르면 실행하지 마세요. 자세한 내용: [README](https://github.com/newmouse11/Nslookup_-ADOFAI-Mod-Install#파란-창windows-smartscreen이-뜰-때)
+            - 코드 서명은 SignPath Foundation 무료 오픈소스 서명을 신청할 준비 중이며 아직 적용되지 않았습니다. 백신이 경고하면 같은 방법으로 해시를 확인하세요. 소스와 빌드 기록(Actions)은 이 저장소에서 확인할 수 있습니다.
             - 설치기는 모드 파일을 포함하지 않고 공식 배포처에서 받아 SHA-256을 확인한 뒤 설치합니다. 출처와 라이선스는 `NOTICE.md`, 바꾼 내용 전부는 `CHANGES.md`를 보세요.
             - UnityModManager는 배포처의 현재 파일(0.33.2)을 설치합니다. 설치한 모드가 실제 게임에서 로드되는지는 아직 확인하지 못했습니다.
           files: |

@@ -9,9 +9,14 @@
     <Deterministic>true</Deterministic>
     <DebugType>none</DebugType>
     <Prefer32Bit>false</Prefer32Bit>
-    <Version>1.2.0.0</Version>
+    <Version>1.2.1.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <!-- 파일 속성(제품 이름·버전·설명)은 코드 서명 정책이 요구하는 메타데이터이기도 하다 -->
     <Product>ADOFAI Mod Installer</Product>
+    <AssemblyTitle>ADOFAI Mod Installer</AssemblyTitle>
+    <Description>Installer for A Dance of Fire and Ice mods (UnityModManager, Doorstop, JALib and more)</Description>
+    <Company>newmouse11</Company>
+    <Authors>newmouse11</Authors>
     <Copyright>Copyright (c) 2026 newmouse11</Copyright>
   </PropertyGroup>
   <ItemGroup>

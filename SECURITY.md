@@ -13,4 +13,4 @@ GitHub 저장소의 Security 탭에서 `Report a vulnerability`로 비공개 신
 ## 알려진 한계
 
 - UnityModManager는 배포처가 Dropbox 링크뿐입니다. 파일이 바뀌면 해시가 달라져 설치가 중단되며, 그때는 `src/catalog.json`의 해시를 새로 확인해 갱신해야 합니다.
-- 실행 파일에 코드 서명이 없어 SmartScreen이나 백신이 경고할 수 있습니다. 릴리스에는 SHA-256 체크섬을 함께 올립니다.
+- 실행 파일에 코드 서명이 없어 SmartScreen(파란 창)이나 백신이 경고할 수 있습니다. 릴리스에는 SHA-256 체크섬을 함께 올립니다. 확인과 실행 방법은 [README](README.md#파란-창windows-smartscreen이-뜰-때), 서명 계획(SignPath Foundation, 신청 준비 중)은 [docs/CODE_SIGNING_POLICY.md](docs/CODE_SIGNING_POLICY.md)를 보세요.
