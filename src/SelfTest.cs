@@ -42,6 +42,7 @@ namespace AdofaiModInstaller
                 TestInstallRollbackUninstall(work);
                 TestDownload(work);
                 TestOverlay(work);
+                TestPresentAndPartial(work);
             }
             finally
             {
@@ -141,6 +142,31 @@ namespace AdofaiModInstaller
             Check("rollback: 첫 파일 원상복구", File.ReadAllText(f1) == "KEEP" && !File.Exists(Store.ReceiptPath(game3)));
         }
 
+
+        // 이미 설치된 필수·의존 항목은 다시 받지 않고(exact 제외), 구성요소 하나만 부분 제거할 수 있다
+        private static void TestPresentAndPartial(string work)
+        {
+            var lib = Comp("lib"); var req = Comp("core"); req.required = true;
+            var app = Comp("app"); app.requires = new[] { "lib" };
+            var doc = Doc(req, lib, app);
+            Func<Component, bool> libPresent = c => c.id == "lib" || c.id == "core";
+            Check("resolve: 설치된 필수·의존 항목은 제외", Catalog.Resolve(doc, new[] { "app" }, libPresent).Select(c => c.id).SequenceEqual(new[] { "app" }));
+            Check("resolve: 설치되어 있지 않으면 필수·의존 항목 추가", Catalog.Resolve(doc, new[] { "app" }, c => false).Select(c => c.id).SequenceEqual(new[] { "core", "lib", "app" }));
+            app.exact = true;
+            Check("resolve: exact는 설치되어 있어도 의존 항목을 함께 설치", Catalog.Resolve(doc, new[] { "app" }, libPresent).Select(c => c.id).SequenceEqual(new[] { "lib", "app" }));
+            Check("catalog: homepage가 https가 아니면 거부", Throws<InvalidDataException>(() => { var c = Comp("h"); c.homepage = "file:///C:/Windows/System32/calc.exe"; Catalog.Validate(Doc(c)); }));
+
+            var game = Path.Combine(work, "game-partial"); Directory.CreateDirectory(game);
+            var plan = new List<KeyValuePair<Component, List<PlannedFile>>> {
+                new KeyValuePair<Component, List<PlannedFile>>(Comp("one"), new List<PlannedFile> { new PlannedFile { Rel = "Mods\\one\\a.txt", Bytes = Encoding.UTF8.GetBytes("1") } }),
+                new KeyValuePair<Component, List<PlannedFile>>(Comp("two"), new List<PlannedFile> { new PlannedFile { Rel = "Mods\\two\\b.txt", Bytes = Encoding.UTF8.GetBytes("2") } }) };
+            Installer.Apply(game, plan, (id, s) => { }, p => { });
+            Installer.Uninstall(game, new[] { "one" });
+            Check("partial uninstall: 고른 것만 제거", !File.Exists(Path.Combine(game, "Mods", "one", "a.txt")) && File.Exists(Path.Combine(game, "Mods", "two", "b.txt")));
+            Check("partial uninstall: 나머지 기록 유지", Store.LoadReceipt(game).components.Select(c => c.id).SequenceEqual(new[] { "two" }));
+            Installer.Uninstall(game, new[] { "two" });
+            Check("partial uninstall: 모두 제거하면 영수증 삭제", !File.Exists(Store.ReceiptPath(game)));
+        }
 
         // 뒤 구성요소가 같은 경로를 쓰면 앞 구성요소 몫은 빠지고, 제거하면 파일이 남지 않는다
         private static void TestOverlay(string work)

@@ -73,6 +73,7 @@
       "kind": "file",
       "path": "Mods/JipperResourcePack/JipperResourcePack.dll",
       "requires": [ "jipper-resource-pack" ],
+      "exact": true,
       "note": "공식 JipperResourcePack 1.5.2.0 전용 수정 빌드입니다. 키뷰어 스타일에 Key16B(두 번째 16키 프리셋)가 추가됩니다. 공식 DLL을 이 파일로 교체하며, 제거하면 원래 파일로 되돌립니다."
     },
     {

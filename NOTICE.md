@@ -41,7 +41,7 @@ JipperResourcePack이 넣은 파일이 넥슨 원본과 같은지는 확인하�
 
 ## 참고한 프로젝트
 
-설치 순서(UnityModManager, Doorstop, JALib, 모드)와 `doorstop_config.ini` 내용은 [JipperResourcePack 설치기](https://github.com/Jongye0l/JipperResourcePack/tree/main/Installer)(BSD-3-Clause, © 2024 Jongyeol)의 방식을 참고했습니다. 코드는 새로 작성했고, 달라진 점은 [CHANGES.md](CHANGES.md)에 적었습니다. 얼불춤용 `Config.xml`은 UnityModManager zip에 들어 있는 `UnityModManagerConfig.xml`의 항목에서 만들어집니다.
+설치 마법사의 화면 구성(5단계 흐름, 위쪽 단계 표시줄, 이전/다음/취소 버튼, 진행 막대와 로그 화면), 설치 순서(UnityModManager, Doorstop, JALib, 모드)와 `doorstop_config.ini` 내용은 [JipperResourcePack 설치기](https://github.com/Jongye0l/JipperResourcePack/tree/main/Installer)(BSD-3-Clause, © 2024 Jongyeol)의 방식을 참고했습니다. 코드는 새로 작성했고, 달라진 점은 [CHANGES.md](CHANGES.md)에 적었습니다. 얼불춤용 `Config.xml`은 UnityModManager zip에 들어 있는 `UnityModManagerConfig.xml`의 항목에서 만들어집니다.
 
 ## BSD 3-Clause License (JipperResourcePack)
 

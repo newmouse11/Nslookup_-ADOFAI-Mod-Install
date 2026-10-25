@@ -187,8 +187,9 @@ namespace AdofaiModInstaller
     internal static class Installer
     {
         // 1) 전부 내려받아 해시 확인 -> 2) 경로 검사 -> 3) 적용. 1~2에서 실패하면 게임 폴더는 그대로다.
-        public static async Task<InstallReport> InstallAsync(string gameDir, IList<Component> comps, Action<string, string> status, Action<double> progress)
+        public static async Task<InstallReport> InstallAsync(string gameDir, IList<Component> comps, Action<string, string> status, Action<double> progress, Action<string> log = null)
         {
+            if (log == null) log = s => { };
             var root = Path.GetFullPath(gameDir).TrimEnd('\\') + "\\";
             var tmp = Path.Combine(Path.GetTempPath(), "AdofaiModInstaller", Guid.NewGuid().ToString("N"));
             try
@@ -199,13 +200,22 @@ namespace AdofaiModInstaller
                     var c = comps[i];
                     int index = i;
                     status(c.id, "다운로드");
-                    files[c.id] = await Downloader.FetchAsync(c, tmp, p => progress((index + p) / comps.Count * 0.6)).ConfigureAwait(false);
+                    log(c.name + " " + c.version + " 다운로드 시작");
+                    int lastLogged = 0;
+                    files[c.id] = await Downloader.FetchAsync(c, tmp, p =>
+                    {
+                        progress((index + p) / comps.Count * 0.6);
+                        int pct = (int)(p * 100) / 25 * 25; // 25%마다 한 줄
+                        if (pct > lastLogged && pct < 100) { lastLogged = pct; log(c.name + " 다운로드 " + pct + "%"); }
+                    }).ConfigureAwait(false);
                     status(c.id, "검증됨");
+                    log(c.name + " 다운로드 완료, SHA-256 일치");
                 }
                 var plan = new List<KeyValuePair<Component, List<PlannedFile>>>();
                 foreach (var c in comps) plan.Add(new KeyValuePair<Component, List<PlannedFile>>(c, Planner.Plan(c, files[c.id], root)));
                 ResolveOverlaps(plan);
-                return Apply(root, plan, status, p => progress(0.6 + p * 0.4));
+                log("게임 폴더에 적용합니다 (파일 " + plan.Sum(p => p.Value.Count) + "개)");
+                return Apply(root, plan, status, p => progress(0.6 + p * 0.4), log);
             }
             finally
             {
@@ -224,8 +234,9 @@ namespace AdofaiModInstaller
         }
 
         // 쓰기 전에 기존 파일을 백업하고, 중간에 실패하면 지금까지 쓴 것을 모두 되돌린다.
-        internal static InstallReport Apply(string root, List<KeyValuePair<Component, List<PlannedFile>>> plan, Action<string, string> status, Action<double> progress)
+        internal static InstallReport Apply(string root, List<KeyValuePair<Component, List<PlannedFile>>> plan, Action<string, string> status, Action<double> progress, Action<string> log = null)
         {
+            if (log == null) log = s => { };
             var report = new InstallReport();
             var old = Store.LoadReceipt(root);
             var oldFiles = old.components.SelectMany(c => c.files).GroupBy(f => f.path, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
@@ -279,6 +290,7 @@ namespace AdofaiModInstaller
                     }
                     receipt.components.Add(rc);
                     status(c.id, "완료");
+                    log(c.name + ": 변경 " + counts[0] + " · 동일 " + counts[1]);
                 }
 
                 // 최종 검증
@@ -321,13 +333,19 @@ namespace AdofaiModInstaller
         }
 
         // 영수증에 기록된 파일만 제거한다. 설치 후 사용자가 바꾼 파일(해시 불일치)은 남긴다.
-        public static string Uninstall(string gameDir)
+        // onlyIds가 있으면 그 구성요소만 제거하고 나머지 기록은 남긴다.
+        public static string Uninstall(string gameDir, ICollection<string> onlyIds = null, Action<string> log = null)
         {
+            if (log == null) log = s => { };
             var root = Path.GetFullPath(gameDir).TrimEnd('\\') + "\\";
             var receipt = Store.LoadReceipt(root);
             if (receipt.components.Count == 0) return "제거할 설치 기록이 없습니다.";
+            var targets = receipt.components.Where(c => onlyIds == null || onlyIds.Contains(c.id, StringComparer.OrdinalIgnoreCase)).ToList();
+            if (targets.Count == 0) return "선택한 구성요소가 설치 기록에 없습니다.";
             int removed = 0, restored = 0, kept = 0;
-            foreach (var c in receipt.components)
+            foreach (var c in targets)
+            {
+                log(c.id + " 제거");
                 foreach (var f in c.files)
                 {
                     var full = Store.SafeCombine(root, f.path);
@@ -337,7 +355,10 @@ namespace AdofaiModInstaller
                     if (backup != null && File.Exists(backup)) { File.Copy(backup, full, true); restored++; }
                     else { File.Delete(full); removed++; PruneEmptyDirs(Path.GetDirectoryName(full), root); }
                 }
-            File.Delete(Store.ReceiptPath(root));
+            }
+            receipt.components.RemoveAll(c => targets.Contains(c));
+            if (receipt.components.Count == 0) File.Delete(Store.ReceiptPath(root));
+            else Store.SaveReceipt(root, receipt);
             return "제거 " + removed + " · 복원 " + restored + (kept > 0 ? " · 수정되어 남김 " + kept : "");
         }
 

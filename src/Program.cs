@@ -29,9 +29,24 @@ namespace AdofaiModInstaller
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                var form = new InstallerForm(catalog, Opt("target"));
+                var state = new WizardState { Doc = catalog, GamePath = Opt("target") };
+                var form = new WizardForm(state);
+                var screens = Screens.Build();
                 var shot = Opt("shot");
-                if (shot != null) { form.SaveShot(shot); return 0; }
+                if (shot != null)
+                {
+                    // 개발용 미리보기: /shot:png /page:0~4 (0 시작, 1 폴더, 2 요소, 3 설치, 4 완료)
+                    int page; int.TryParse(Opt("page") ?? "0", out page);
+                    state.GamePath = state.GamePath ?? GameLocator.Find();
+                    state.Resolved = catalog.components.Where(c => c.defaultOn || c.required).ToList();
+                    state.Summary = "변경 34 · 동일 0";
+                    state.Success = true;
+                    state.Preview = true; // 화면만 그린다 (실제 다운로드·설치 없음)
+                    form.Go(screens[Math.Max(0, Math.Min(4, page))]);
+                    form.SaveShot(shot);
+                    return 0;
+                }
+                form.Go(screens[0]);
                 Application.Run(form);
                 return 0;
             }
@@ -51,11 +66,11 @@ namespace AdofaiModInstaller
             if (GameLocator.IsGameRunning()) return Report(log, 3, "게임이 실행 중입니다.");
             try
             {
-                if (uninstall) return Report(log, 0, "ok " + Installer.Uninstall(dir));
-                var ids = components != null
-                    ? components.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim())
-                    : catalog.components.Where(c => c.defaultOn || c.required).Select(c => c.id);
-                var comps = Catalog.Resolve(catalog, ids);
+                var ids = components == null ? null : components.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
+                if (uninstall) return Report(log, 0, "ok " + Installer.Uninstall(dir, ids));
+                // 생략하면 기본 선택(필수가 아닌 defaultOn). 필수·의존 항목은 게임 폴더에 없을 때만 자동으로 추가된다.
+                var chosen = ids ?? catalog.components.Where(c => c.defaultOn && !c.required).Select(c => c.id).ToList();
+                var comps = Catalog.Resolve(catalog, chosen, c => Catalog.IsPresent(c, dir));
                 var report = Installer.InstallAsync(dir, comps, (id, s) => { }, p => { }).GetAwaiter().GetResult();
                 return Report(log, 0, "ok written=" + report.Written + " unchanged=" + report.Unchanged + " backedUp=" + report.BackedUp);
             }
