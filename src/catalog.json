@@ -61,6 +61,21 @@
       "defaultOn": true
     },
     {
+      "id": "jipper-key16b",
+      "name": "Jipper Key16B 패치",
+      "version": "1.5.2.0",
+      "author": "Jongyeol / 패치 newmouse11",
+      "license": "BSD-3-Clause",
+      "homepage": "https://github.com/newmouse11/Nslookup_-ADOFAI-Mod-Install",
+      "url": "https://github.com/newmouse11/Nslookup_-ADOFAI-Mod-Install/releases/download/v1.1.0/JipperResourcePack-1.5.2.0-Key16B.dll",
+      "sha256": "3c79b853e2aa5bcb9e9429b1b0ef99ee09ecda345bce2e146f2a1edfef6cd819",
+      "size": 151552,
+      "kind": "file",
+      "path": "Mods/JipperResourcePack/JipperResourcePack.dll",
+      "requires": [ "jipper-resource-pack" ],
+      "note": "공식 JipperResourcePack 1.5.2.0 전용 수정 빌드입니다. 키뷰어 스타일에 Key16B(두 번째 16키 프리셋)가 추가됩니다. 공식 DLL을 이 파일로 교체하며, 제거하면 원래 파일로 되돌립니다."
+    },
+    {
       "id": "adofai-tweaks",
       "name": "AdofaiTweaks",
       "version": "2.9.3",

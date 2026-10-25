@@ -20,6 +20,7 @@
 | UnityDoorstop | 4.5.0 | LGPL-2.1 | 필수 |
 | JALib | 1.0.0.45 | BSD-3-Clause | 선택됨 |
 | JipperResourcePack | 1.5.2.0 | BSD-3-Clause | 선택됨 (JALib 필요) |
+| Jipper Key16B 패치 | 1.5.2.0 | BSD-3-Clause | (Jipper 필요) 공식 DLL을 수정 빌드로 교체 |
 | AdofaiTweaks | 2.9.3 / 2.8.1 | MIT | |
 | TogetherBootstrap | 1.5.5 | 미지정 | |
 | KeyboardChatterBlocker | 0.1.2 | 미지정 | |
@@ -74,14 +75,32 @@ dotnet build src\AdofaiModInstaller.csproj -c Release
 
 ## 검증 상태
 
-- 자체 검사(`/selftest`) 30개 통과: 카탈로그 검증, 경로 이탈 거부, zip 구조 처리, 롤백·제거, 해시·크기 검증.
+- 자체 검사(`/selftest`) 33개 통과: 카탈로그 검증, 경로 이탈 거부, zip 구조 처리, 롤백·제거, 해시·크기 검증, 같은 경로 처리.
+- Key16B 패치 구성요소: 새 설치와 공식 Jipper 위에 교체 설치 모두 DLL이 정확히 들어가고, 제거하면 파일이 남지 않는 것을 확인했습니다.
 - 실행 파일 자리표시자만 있는 가짜 게임 폴더에 공식 배포처에서 실제로 받아 설치, 재설치, 제거, 기존 파일 백업·복원, 해시 불일치 거부를 확인했습니다. 설치된 `winhttp.dll`, `doorstop_config.ini`, `Config.xml`은 실제로 동작 중인 환경의 파일과 바이트 단위로 같았습니다.
 - 확인하지 못한 것: 설치된 모드가 **실제 게임에서 로드되는지**, 그리고 GitHub Actions 워크플로 실행.
 - UnityModManager는 배포처의 파일(현재 0.33.2)을 그대로 설치합니다. 이전 버전(0.32.x)에서 확인된 조합과 다를 수 있습니다.
 
 ## Key16B 패치
 
-JipperResourcePack 키뷰어에 두 번째 16키 프리셋을 추가하는 패치가 `patches/jipper-key16b.patch`에 있습니다. 적용 방법과 내용은 [CHANGES.md](CHANGES.md)를 보세요. 패치로 빌드한 DLL은 이 저장소에 포함하지 않았습니다. 릴리스로 올린다면 `kind: file` 항목으로 카탈로그에 추가할 수 있습니다.
+JipperResourcePack 키뷰어의 스타일 줄에 `Key16B` 버튼(두 번째 16키 프리셋, 키 배치를 따로 저장)을 추가한 수정 빌드입니다. 설치기에서 `Jipper Key16B 패치`를 체크하면 공식 DLL을 이 빌드로 교체하고, 제거하면 되돌립니다.
+
+| 위치 | 내용 |
+|---|---|
+| `dist/jipper-key16b/` | 수정 DLL(`JipperResourcePack-1.5.2.0-Key16B.dll`)과 라이선스 고지 |
+| `patches/` | 기능 변경(`jipper-key16b.patch`)과 빌드 조정(`jipper-local-build-tweaks.patch`) |
+| `tools/jipper-build/` | 직접 다시 빌드하는 도구와 절차 |
+
+공식 빌드가 아니며 1.5.2.0 전용입니다. 바뀐 내용 전부와 검증 결과는 [CHANGES.md](CHANGES.md)에 있습니다.
+
+## 저장소 구성
+
+| 경로 | 내용 |
+|---|---|
+| `src/` | 설치기 소스와 내장 카탈로그(`catalog.json`) |
+| `dist/` | Key16B 수정 DLL |
+| `patches/`, `tools/` | 패치, 카탈로그 항목 계산 스크립트, DLL 재빌드 도구 |
+| `NOTICE.md`, `CHANGES.md`, `SECURITY.md`, `LICENSE` | 출처·저작권, 바꾼 내용, 보안, 라이선스 |
 
 ## 라이선스
 

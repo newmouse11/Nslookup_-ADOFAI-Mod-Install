@@ -204,6 +204,7 @@ namespace AdofaiModInstaller
                 }
                 var plan = new List<KeyValuePair<Component, List<PlannedFile>>>();
                 foreach (var c in comps) plan.Add(new KeyValuePair<Component, List<PlannedFile>>(c, Planner.Plan(c, files[c.id], root)));
+                ResolveOverlaps(plan);
                 return Apply(root, plan, status, p => progress(0.6 + p * 0.4));
             }
             finally
@@ -211,6 +212,15 @@ namespace AdofaiModInstaller
                 try { Directory.Delete(tmp, true); }
                 catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException) { /* 임시 폴더 정리 실패는 설치 결과와 무관 */ }
             }
+        }
+
+        // 같은 경로를 여러 구성요소가 쓰면(예: Key16B 패치 DLL이 Jipper의 공식 DLL을 대체) 카탈로그에서 뒤에 있는 것이 이긴다.
+        // 앞 구성요소의 해당 파일은 계획에서 빼서, 영수증과 제거가 한 구성요소에만 걸리게 한다.
+        internal static void ResolveOverlaps(List<KeyValuePair<Component, List<PlannedFile>>> plan)
+        {
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            for (int i = plan.Count - 1; i >= 0; i--)
+                plan[i].Value.RemoveAll(f => !seen.Add(f.Rel));
         }
 
         // 쓰기 전에 기존 파일을 백업하고, 중간에 실패하면 지금까지 쓴 것을 모두 되돌린다.

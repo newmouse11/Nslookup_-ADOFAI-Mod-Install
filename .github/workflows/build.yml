@@ -21,6 +21,14 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Catalog matches the committed Key16B DLL
+        shell: pwsh
+        run: |
+          $c = (Get-Content src/catalog.json -Raw -Encoding UTF8 | ConvertFrom-Json).components | Where-Object id -eq 'jipper-key16b'
+          $f = Get-Item dist/jipper-key16b/JipperResourcePack-1.5.2.0-Key16B.dll
+          $h = (Get-FileHash $f -Algorithm SHA256).Hash.ToLower()
+          if ($h -ne $c.sha256.ToLower() -or $f.Length -ne $c.size) { throw "catalog.json does not match the DLL (sha256 $h, size $($f.Length))" }
+
       - name: Build
         shell: pwsh
         run: dotnet build src/AdofaiModInstaller.csproj -c Release -o out
@@ -36,8 +44,8 @@ jobs:
       - name: Checksums
         shell: pwsh
         run: |
-          Get-FileHash out/ADOFAI-Mod-Installer.exe -Algorithm SHA256 |
-            ForEach-Object { "$($_.Hash.ToLower())  ADOFAI-Mod-Installer.exe" } |
+          'out/ADOFAI-Mod-Installer.exe', 'dist/jipper-key16b/JipperResourcePack-1.5.2.0-Key16B.dll' |
+            ForEach-Object { "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $(Split-Path $_ -Leaf)" } |
             Set-Content out/SHA256SUMS.txt
 
       - uses: actions/upload-artifact@v4
@@ -46,6 +54,7 @@ jobs:
           path: |
             out/ADOFAI-Mod-Installer.exe
             out/SHA256SUMS.txt
+            dist/jipper-key16b/*
 
       - name: Release (tags only)
         if: startsWith(github.ref, 'refs/tags/v')
@@ -56,13 +65,16 @@ jobs:
             ## 받는 파일
 
             - `ADOFAI-Mod-Installer.exe`: 설치기 (Windows, .NET Framework 4.8 필요 — Windows 10/11에 기본 포함)
-            - `SHA256SUMS.txt`: 위 파일의 SHA-256. 확인: `certutil -hashfile ADOFAI-Mod-Installer.exe SHA256`
+            - `JipperResourcePack-1.5.2.0-Key16B.dll`: 설치기의 `Jipper Key16B 패치`가 받아 가는 수정 DLL (직접 받을 필요 없음). 공식 빌드가 아니며 라이선스 고지는 `NOTICE.txt`
+            - `SHA256SUMS.txt`: 위 두 파일의 SHA-256. 확인: `certutil -hashfile <파일> SHA256`
 
             ## 알아둘 점
 
             - 코드 서명이 없어 SmartScreen/백신이 경고할 수 있습니다. 소스와 빌드 기록(Actions)은 이 저장소에서 확인할 수 있습니다.
-            - 설치기는 모드 파일을 포함하지 않고 공식 배포처에서 받아 SHA-256을 확인한 뒤 설치합니다. 출처와 라이선스는 `NOTICE.md`를 보세요.
+            - 설치기는 모드 파일을 포함하지 않고 공식 배포처에서 받아 SHA-256을 확인한 뒤 설치합니다. 출처와 라이선스는 `NOTICE.md`, 바꾼 내용 전부는 `CHANGES.md`를 보세요.
             - UnityModManager는 배포처의 현재 파일(0.33.2)을 설치합니다. 설치한 모드가 실제 게임에서 로드되는지는 아직 확인하지 못했습니다.
           files: |
             out/ADOFAI-Mod-Installer.exe
             out/SHA256SUMS.txt
+            dist/jipper-key16b/JipperResourcePack-1.5.2.0-Key16B.dll
+            dist/jipper-key16b/NOTICE.txt

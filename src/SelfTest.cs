@@ -41,6 +41,7 @@ namespace AdofaiModInstaller
                 TestPlanner(work);
                 TestInstallRollbackUninstall(work);
                 TestDownload(work);
+                TestOverlay(work);
             }
             finally
             {
@@ -140,6 +141,25 @@ namespace AdofaiModInstaller
             Check("rollback: 첫 파일 원상복구", File.ReadAllText(f1) == "KEEP" && !File.Exists(Store.ReceiptPath(game3)));
         }
 
+
+        // 뒤 구성요소가 같은 경로를 쓰면 앞 구성요소 몫은 빠지고, 제거하면 파일이 남지 않는다
+        private static void TestOverlay(string work)
+        {
+            var game = Path.Combine(work, "game-overlay"); Directory.CreateDirectory(game);
+            var basePack = Comp("base"); var patch = Comp("patch", "file");
+            var plan = new List<KeyValuePair<Component, List<PlannedFile>>> {
+                new KeyValuePair<Component, List<PlannedFile>>(basePack, new List<PlannedFile> {
+                    new PlannedFile { Rel = "Mods\\base\\a.dll", Bytes = Encoding.UTF8.GetBytes("OFFICIAL") },
+                    new PlannedFile { Rel = "Mods\\base\\Info.json", Bytes = Encoding.UTF8.GetBytes("{}") } }),
+                new KeyValuePair<Component, List<PlannedFile>>(patch, new List<PlannedFile> {
+                    new PlannedFile { Rel = "Mods\\BASE\\A.dll", Bytes = Encoding.UTF8.GetBytes("PATCHED") } }) };
+            Installer.ResolveOverlaps(plan);
+            Check("overlay: 앞 구성요소의 같은 경로 항목 제거(대소문자 무시)", plan[0].Value.Count == 1 && plan[1].Value.Count == 1);
+            var report = Installer.Apply(game, plan, (id, s) => { }, p => { });
+            Check("overlay: 패치 파일이 최종 내용", File.ReadAllText(Path.Combine(game, "Mods", "base", "a.dll")) == "PATCHED" && report.BackedUp == 0);
+            Installer.Uninstall(game);
+            Check("overlay: 제거하면 파일·폴더가 남지 않음", !Directory.Exists(Path.Combine(game, "Mods")));
+        }
 
         private static void TestDownload(string work)
         {

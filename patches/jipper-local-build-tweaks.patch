@@ -1,0 +1,121 @@
+diff --git a/JipperResourcePack/JipperResourcePack.csproj b/JipperResourcePack/JipperResourcePack.csproj
+index aaad2d2..59d20a3 100644
+--- a/JipperResourcePack/JipperResourcePack.csproj
++++ b/JipperResourcePack/JipperResourcePack.csproj
+@@ -1,4 +1,4 @@
+-﻿<Project Sdk="Microsoft.NET.Sdk">
++<Project Sdk="Microsoft.NET.Sdk">
+     <PropertyGroup>
+         <TargetFramework>net481</TargetFramework>
+         <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+@@ -36,10 +36,10 @@
+             <HintPath>$(GameManagedPath)/Accessibility.dll</HintPath>
+         </Reference>
+         <Reference Include="AdofaiTweaks">
+-            <HintPath>$(GameManagedPath)/../../Mods/AdofaiTweaks/AdofaiTweaks.dll</HintPath>
++            <HintPath>$(RefDir)/AdofaiTweaks.dll</HintPath>
+         </Reference>
+         <Reference Include="Assembly-CSharp">
+-            <HintPath>$(GameManagedPath)/Assembly-CSharp.dll</HintPath>
++            <HintPath>$(RefDir)/Assembly-CSharp.dll</HintPath>
+         </Reference>
+         <Reference Include="Assembly-CSharp-firstpass">
+             <HintPath>$(GameManagedPath)/Assembly-CSharp-firstpass.dll</HintPath>
+@@ -81,7 +81,7 @@
+             <HintPath>$(GameManagedPath)/../../Mods/JALib/JALib.dll</HintPath>
+         </Reference>
+         <Reference Include="KeyboardChatterBlocker">
+-            <HintPath>$(GameManagedPath)/../../Mods/KeyboardChatterBlocker/KeyboardChatterBlocker.dll</HintPath>
++            <HintPath>$(RefDir)/KeyboardChatterBlocker.dll</HintPath>
+         </Reference>
+         <Reference Include="Mono.Data.Sqlite">
+             <HintPath>$(GameManagedPath)/Mono.Data.Sqlite.dll</HintPath>
+@@ -509,35 +509,14 @@
+         </Reference>
+     </ItemGroup>
+ 
++    <!-- 로컬 빌드 전용: 설치된 모드의 사전 빌드 VersionSafe를 컴파일 참조로만 사용 (최신 버킷은 이 PC의 게임 DLL과 안 맞음) -->
+     <ItemGroup>
+-        <!-- Only the compile-time reference is a ProjectReference. The other buckets are built
+-             by BuildVersionSafeBuckets below: Rider and VS collapse ProjectReferences that point
+-             at the same .csproj into one graph node, so the AdditionalProperties variants get
+-             deduped away and only this one is ever built. -->
+-        <ProjectReference Include="..\JipperResourcePack.VersionSafe\JipperResourcePack.VersionSafe.csproj"
+-                          AdditionalProperties="GameVersion=latest" Private="false"/>
++        <Reference Include="JipperResourcePack.VersionSafe">
++            <HintPath>$(RefDir)/JipperResourcePack.VersionSafe.dll</HintPath>
++            <Private>false</Private>
++        </Reference>
+     </ItemGroup>
+ 
+-    <Target Name="BuildVersionSafeBuckets" AfterTargets="Build">
+-        <ItemGroup>
+-            <VersionSafeBucket Include="$(MSBuildThisFileDirectory)../JipperResourcePack.VersionSafe/JipperResourcePack.VersionSafe.csproj">
+-                <AdditionalProperties>GameVersion=R136</AdditionalProperties>
+-            </VersionSafeBucket>
+-            <VersionSafeBucket Include="$(MSBuildThisFileDirectory)../JipperResourcePack.VersionSafe/JipperResourcePack.VersionSafe.csproj">
+-                <AdditionalProperties>GameVersion=R141</AdditionalProperties>
+-            </VersionSafeBucket>
+-            <VersionSafeBucket Include="$(MSBuildThisFileDirectory)../JipperResourcePack.VersionSafe/JipperResourcePack.VersionSafe.csproj">
+-                <AdditionalProperties>GameVersion=R146</AdditionalProperties>
+-            </VersionSafeBucket>
+-            <VersionSafeBucket Include="$(MSBuildThisFileDirectory)../JipperResourcePack.VersionSafe/JipperResourcePack.VersionSafe.csproj">
+-                <AdditionalProperties>GameVersion=R149</AdditionalProperties>
+-            </VersionSafeBucket>
+-        </ItemGroup>
+-        <!-- AdditionalProperties metadata adds to the inherited global properties; the task's
+-             Properties attribute would replace them instead. -->
+-        <MSBuild Projects="@(VersionSafeBucket)" BuildInParallel="true"/>
+-    </Target>
+-
+     <Target Name="CopyToModPath" AfterTargets="Build" Condition="'$(ModPath)' != ''">
+         <Copy SourceFiles="$(OutputPath)JipperResourcePack.dll" DestinationFolder="$(ModPath)/JipperResourcePack" SkipUnchangedFiles="true"/>
+         <Copy SourceFiles="$(OutputPath)JipperResourcePack.pdb" DestinationFolder="$(ModPath)/JipperResourcePack" Condition="Exists('$(OutputPath)JipperResourcePack.pdb')" SkipUnchangedFiles="true"/>
+diff --git a/JipperResourcePack/OverlayContents/OverlayTextManagerCoop.cs b/JipperResourcePack/OverlayContents/OverlayTextManagerCoop.cs
+index ef2b4e8..bea1548 100644
+--- a/JipperResourcePack/OverlayContents/OverlayTextManagerCoop.cs
++++ b/JipperResourcePack/OverlayContents/OverlayTextManagerCoop.cs
+@@ -123,7 +123,7 @@ public class OverlayTextManagerCoop : IOverlayTextManager {
+ 
+     [MethodImpl(MethodImplOptions.NoInlining)]
+     private static void SetXScore(Overlay overlay, ref PlayerData pData, int i) {
+-        int perfectValue = HitMargin.XPerfect.ToXScore();
++        int perfectValue = HitMarginHelper.ToXScore(HitMargin.XPerfect);
+         int seqID = GetSeqID(i);
+         int remaining = overlay.GetRemainingTiles(seqID);
+         int xScore = scrMistakesManager.marginTrackers[i].xScore;
+diff --git a/JipperResourcePack/OverlayContents/OverlayTextManagerNormal.cs b/JipperResourcePack/OverlayContents/OverlayTextManagerNormal.cs
+index c0ea3d7..5867146 100644
+--- a/JipperResourcePack/OverlayContents/OverlayTextManagerNormal.cs
++++ b/JipperResourcePack/OverlayContents/OverlayTextManagerNormal.cs
+@@ -58,7 +58,7 @@ public class OverlayTextManagerNormal : IOverlayTextManager {
+     }
+ 
+     private static void UpdateXScore(Overlay overlay, int judged, int remaining) {
+-        int perfectValue = HitMargin.XPerfect.ToXScore();
++        int perfectValue = HitMarginHelper.ToXScore(HitMargin.XPerfect);
+         int xScore = scrMistakesManager.marginTrackers[0].xScore;
+         int maxXScore = judged * perfectValue;
+         int potentialXScore = xScore + remaining * perfectValue;
+diff --git a/JipperResourcePack/OverlayContents/Status.cs b/JipperResourcePack/OverlayContents/Status.cs
+index 2c8ac62..2cd3169 100644
+--- a/JipperResourcePack/OverlayContents/Status.cs
++++ b/JipperResourcePack/OverlayContents/Status.cs
+@@ -290,7 +290,7 @@ public class Status : Feature {
+         Overlay.Instance.UpdateTiming(timing, _planet.player.playerID);
+     }
+ 
+-    [JAPatch(typeof(scrMisc), nameof(scrMisc.GetHitMarginInDeg), PatchType.Postfix, false, MinVersion = 149)]
++    [JAPatch(typeof(scrMisc), "GetHitMarginInDeg", PatchType.Postfix, false, MinVersion = 149)]
+     private static void GetHitMarginInDegProxyR149(float hitAngle, float refAngle, bool clockwise, float floorBpm, float conductorPitch, HitMargin __result) {
+         if(!IsTimingAvailable(_planet)) return;
+ 
+@@ -299,7 +299,7 @@ public class Status : Feature {
+         Overlay.Instance.UpdateTiming(timing, _planet.player.playerID);
+     }
+ 
+-    [JAPatch(typeof(scrMisc), nameof(scrMisc.GetHitMarginInSec), PatchType.Postfix, false, MinVersion = 149)]
++    [JAPatch(typeof(scrMisc), "GetHitMarginInSec", PatchType.Postfix, false, MinVersion = 149)]
+     private static void GetHitMarginInSecProxyR149(double timeDiff, HitMargin __result) {
+         if(!IsTimingAvailable(_planet)) return;
+ 

@@ -35,7 +35,9 @@ JipperResourcePack이 넣은 파일이 넥슨 원본과 같은지는 확인하�
 | 파일 | 저작권 | 라이선스 |
 |---|---|---|
 | `src/`, `tools/`, 문서 | © 2026 newmouse11 | MIT (`LICENSE`) |
-| `patches/jipper-key16b.patch` | JipperResourcePack의 © 2024 Jongyeol 코드에 대한 변경분 | BSD-3-Clause (아래) |
+| `patches/jipper-key16b.patch`, `patches/jipper-local-build-tweaks.patch` | JipperResourcePack의 © 2024 Jongyeol 코드에 대한 변경분 | BSD-3-Clause (아래) |
+| `dist/jipper-key16b/JipperResourcePack-1.5.2.0-Key16B.dll` | JipperResourcePack 1.5.2.0의 수정 빌드 (원본 © 2024 Jongyeol, 변경 © 2026 newmouse11) | BSD-3-Clause (아래, `dist/jipper-key16b/NOTICE.txt`) |
+| `tools/jipper-build/` | © 2026 newmouse11 | MIT |
 
 ## 참고한 프로젝트
 
