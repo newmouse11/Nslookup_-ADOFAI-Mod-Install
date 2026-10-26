@@ -1,8 +1,8 @@
 # Code signing policy
 
-> 한국어 요약: 이 문서는 SignPath Foundation의 무료 오픈소스 코드 서명([조건](https://signpath.org/terms))에 맞춘 서명 정책 초안입니다. **아직 신청·승인 전이며 현재 릴리스는 서명되어 있지 않습니다.** 서명되지 않은 exe를 실행할 때의 파란 창은 [README](../README.md#파란-창windows-smartscreen이-뜰-때)를 보세요.
+> 한국어 요약: 이 문서는 SignPath Foundation의 무료 오픈소스 코드 서명([조건](https://signpath.org/terms))에 맞춘 서명 정책 초안입니다. **2026-10-26에 신청했으나 이번에는 승인되지 않았고, 현재 릴리스는 서명되어 있지 않습니다.** 서명되지 않은 exe를 실행할 때의 파란 창은 [README](../README.md#파란-창windows-smartscreen이-뜰-때)를 보세요.
 
-**Status: planned.** The maintainer is preparing an application to the [SignPath Foundation](https://signpath.org/) free code signing program for open source projects. Until the application is accepted, release binaries are **not signed**.
+**Status: not signed.** The maintainer applied to the [SignPath Foundation](https://signpath.org/) free code signing program for open source projects on 2026-10-26. The application was declined for now because the project does not yet have enough community adoption and recognition (the Foundation's criterion, not a judgment of project quality). The maintainer plans to re-apply once the project is more widely used. Until a later application is accepted, release binaries are **not signed**.
 
 <!-- 승인된 뒤에만 아래 문장을 README와 릴리스 본문, 이 문서 맨 위에 추가한다:
      Free code signing provided by [SignPath.io](https://signpath.io/), certificate by [SignPath Foundation](https://signpath.org/) -->

@@ -80,7 +80,7 @@ dotnet build src\AdofaiModInstaller.csproj -c Release
 
 해시가 다르거나 이 저장소의 릴리스가 아닌 곳에서 받았다면 실행하지 마세요. 경고를 없애려고 SmartScreen이나 백신을 끄지 마세요. 백신이 따로 경고하면 같은 방법으로 해시를 확인한 뒤 본인이 판단해 예외를 추가하세요.
 
-**코드 서명 계획:** SignPath Foundation의 무료 오픈소스 코드 서명을 신청할 준비 중입니다(아직 신청·승인 전). 서명 정책 초안은 [docs/CODE_SIGNING_POLICY.md](docs/CODE_SIGNING_POLICY.md)에 있습니다. 서명이 적용돼도 이용자가 쌓이기 전에는 경고가 한동안 남을 수 있습니다.
+**코드 서명:** 아직 없습니다. 2026-10-26에 SignPath Foundation의 무료 오픈소스 코드 서명을 신청했지만, 프로젝트가 새롭고 이용자·외부 언급이 아직 부족하다는 이유로 이번에는 승인되지 않았습니다. 이용자가 늘면 다시 신청할 계획이며, 정책 초안은 [docs/CODE_SIGNING_POLICY.md](docs/CODE_SIGNING_POLICY.md)에 있습니다. 그때까지는 위의 해시 확인 방법을 쓰세요.
 
 ## 카탈로그 수정 (구성요소 추가)
 
