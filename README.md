@@ -13,7 +13,7 @@ Unity Mod Manager(UMM) 설치부터 모드 설치·업데이트·켜기/끄기�
 
 ## 사용법
 
-1. [Releases](https://github.com/Newmouse11/adofai-mod-helper/releases)에서 `AdofaiModHelper.exe`를 받아 실행
+1. [Releases](https://github.com/newmouse11/Nslookup_-ADOFAI-Mod-Install/releases)에서 `AdofaiModHelper.exe`를 받아 실행
    - "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행** (서명되지 않은 프로그램이라 처음에 뜰 수 있음)
 2. 마법사를 따라 **게임 찾기 → UMM 설치 → 모드 고르기**
 3. 게임에서 `Ctrl + F10`을 누르면 UMM 모드 메뉴가 열립니다
@@ -77,6 +77,8 @@ UMM 공식 설치기(`UnityModManagerApp/Form.cs`)의 DoorstopProxy 설치를 �
 
 ## 라이선스
 
+- 이 도구의 코드: MIT ([`LICENSE`](LICENSE))
+- v1.x 릴리스는 이전 설치기(ADOFAI-Mod-Installer)이고, v2.0.0부터 이 도구로 바뀌었습니다. 이전 코드는 저장소 기록과 v1.x 태그에 남아 있습니다.
 - 이 도구에 포함된 글꼴: IBM Plex Sans, Noto Sans KR (SIL Open Font License 1.1) — [`licenses/`](licenses/)
 - UMM은 포함하지 않고 실행 시 공식 배포처에서 받습니다 (UMM: MIT, newman55).
 - 모드는 각 제작자의 저장소에서 직접 받으며, 각 모드의 라이선스를 따릅니다.
