@@ -2,7 +2,12 @@
 
 ## Git / GitHub
 Why: 사용자가 "업데이트할 때마다 GitHub에 올려"라고 지시함 (전역 CLAUDE.md §12 "Never push"의 이 프로젝트 한정 예외).
-- 검증된 변경마다: secret-scan → 커밋 → `git push origin main`. force-push와 히스토리 재작성은 여전히 금지.
+- 검증된 업데이트마다 릴리스까지 한다:
+  1. `src/AdofaiModHelper/AdofaiModHelper.csproj`의 `<Version>`을 올린다 (버그 수정 = 패치, 기능 추가 = 마이너)
+  2. secret-scan → 커밋 → `git tag v<Version>` → `git push origin main --follow-tags`
+  3. GitHub Actions(`.github/workflows/build.yml`)가 태그를 받아 빌드·자체 검사 후 exe와 SHA256SUMS로 릴리스를 만든다.
+     태그와 `<Version>`이 다르면 워크플로가 실패한다 (도구의 새 버전 알림이 둘을 비교하기 때문).
+- force-push와 히스토리 재작성은 여전히 금지.
 - 커밋 작성자는 GitHub noreply 주소만 쓴다: `newmouse11 <77029057+newmouse11@users.noreply.github.com>`
   (저장소 로컬 git config에 설정됨). 개인 이메일이 커밋에 들어가면 공개 저장소에 노출된다.
 - 원격: `https://github.com/Newmouse11/adofai-mod-helper` (기본 브랜치 `main`). 도구가 `catalog/mods.json`을

@@ -1,0 +1,70 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: write   # 태그 빌드에서 릴리스 파일을 올릴 때 필요
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # 도구의 '새 버전 알림'은 릴리스 태그와 exe 버전을 비교하므로 둘이 다르면 릴리스하지 않는다
+      - name: Tag matches app version
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        run: |
+          $v = ([xml](Get-Content src/AdofaiModHelper/AdofaiModHelper.csproj -Raw)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          if ("v$v" -ne $env:GITHUB_REF_NAME) { throw "tag $env:GITHUB_REF_NAME does not match csproj Version $v" }
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build src/AdofaiModHelper -c Release -o out
+
+      - name: Self test (offline, no game files needed)
+        shell: pwsh
+        run: dotnet run --project tests/SelfTest -c Release
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          "$((Get-FileHash out/AdofaiModHelper.exe -Algorithm SHA256).Hash.ToLower())  AdofaiModHelper.exe" |
+            Set-Content out/SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AdofaiModHelper
+          path: |
+            out/AdofaiModHelper.exe
+            out/SHA256SUMS.txt
+
+      - name: Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          body: |
+            ## 받는 파일
+
+            - `AdofaiModHelper.exe`: 얼불춤 모드 도우미 (Windows 10/11, 설치 없이 실행)
+            - `SHA256SUMS.txt`: exe의 SHA-256. 확인: `certutil -hashfile AdofaiModHelper.exe SHA256`
+
+            ## 알아둘 점
+
+            - **파란 창이 뜨면:** 코드 서명이 없어서 처음 실행할 때 Windows SmartScreen("Windows에서 PC를 보호했습니다")이 뜰 수 있습니다. 악성 판정이 아니라 "모르는 파일"이라는 뜻입니다. 해시가 `SHA256SUMS.txt`와 같으면 `추가 정보` → `실행`을 누르세요.
+            - UMM과 모드는 exe에 포함되지 않고, 실행할 때 공식 배포처(UMM: Dropbox, 모드: 각 GitHub 릴리스)에서 받습니다.
+          files: |
+            out/AdofaiModHelper.exe
+            out/SHA256SUMS.txt
