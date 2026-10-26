@@ -1,0 +1,14 @@
+<Application x:Class="AdofaiModHelper.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Theme.xaml"/>
+        <!-- 언어 사전: App.SetLanguage가 이 자리(인덱스 1)를 갈아끼운다 -->
+        <ResourceDictionary Source="Strings.ko.xaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+</Application>

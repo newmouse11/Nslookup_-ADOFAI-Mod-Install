@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "mods": [
+    {
+      "id": "JipperResourcePack",
+      "name": "Jipper Resource Pack",
+      "author": "Jongyeol",
+      "repo": "Jongye0l/JipperResourcePack",
+      "asset": "^JipperResourcePack\\.zip$",
+      "requires": ["JALib"],
+      "description": { "ko": "진행도·정확도·키뷰어 등 지퍼 스타일 화면 표시", "en": "Jipper-style HUD: progress, accuracy, key viewer" }
+    },
+    {
+      "id": "AdofaiTweaks",
+      "name": "ADOFAI Tweaks",
+      "author": "PizzaLovers007",
+      "repo": "PizzaLovers007/AdofaiTweaks",
+      "asset": "^AdofaiTweaks-.*\\.zip$",
+      "description": { "ko": "키뷰어·판정 표시·키 제한·이펙트 끄기 등 편의 기능 모음", "en": "Key viewer, judgment visuals, key limiter, effect toggles" }
+    },
+    {
+      "id": "TimingShow",
+      "name": "TimingShow",
+      "author": "SleepingCui",
+      "repo": "SleepingCui/TimingShow",
+      "asset": "^TimingShow\\.zip$",
+      "description": { "ko": "타이밍·UR·XACC 그래프로 입력 분석", "en": "Hit timing analysis: timing, UR and XACC graphs" }
+    },
+    {
+      "id": "Quartz",
+      "name": "Quartz",
+      "author": "koren",
+      "repo": "PrismMods/Quartz",
+      "asset": "^QuartzUmm\\.zip$",
+      "description": { "ko": "HUD·키뷰어·편의 기능 올인원", "en": "All-in-one HUD, key viewer and utilities" }
+    },
+    {
+      "id": "JipperOverlayer",
+      "name": "Jipper Overlayer",
+      "author": "adofaiex",
+      "repo": "adofaiex/JipperOverlayer",
+      "asset": "-UMM\\.zip$",
+      "description": { "ko": "진행도·정확도·BPM·콤보·판정 오버레이", "en": "Overlay for progress, accuracy, BPM, combo, judgements" }
+    },
+    {
+      "id": "BetterCalibration",
+      "name": "Better Calibration",
+      "author": "Jongyeol",
+      "repo": "Jongye0l/BetterCalibration",
+      "asset": "^BetterCalibration\\.zip$",
+      "requires": ["JALib"],
+      "description": { "ko": "더 정확한 오프셋 보정(캘리브레이션)", "en": "More accurate input offset calibration" }
+    },
+    {
+      "id": "XPerfect",
+      "name": "XPerfect",
+      "author": "8100print",
+      "repo": "8100print/XPerfect",
+      "asset": "^XPerfect\\.zip$",
+      "description": { "ko": "XPerfect 판정선·카운터 표시", "en": "XPerfect hit-error meter and counter" }
+    },
+    {
+      "id": "ShowBPM",
+      "name": "ShowBPM",
+      "author": "2228293026",
+      "repo": "2228293026/ShowBPM-Fix",
+      "asset": "^ShowBPM.*\\.zip$",
+      "description": { "ko": "현재 BPM과 속도 표시", "en": "Shows current BPM and speed" }
+    },
+    {
+      "id": "KeyboardChatterBlocker",
+      "name": "Keyboard Chatter Blocker",
+      "author": "fangshenghan",
+      "repo": "fangshenghan/KeyboardChatterBlocker",
+      "asset": "^KeyboardChatterBlocker.*\\.zip$",
+      "description": { "ko": "기계식 키보드 채터링(두 번 입력) 차단", "en": "Blocks keyboard chatter (double inputs)" }
+    },
+    {
+      "id": "Iridium",
+      "name": "Iridium",
+      "author": "adofaiex",
+      "repo": "adofaiex/Iridium",
+      "asset": "\\+adofai_v3\\.zip$",
+      "description": { "ko": "성능 최적화·UI 커스터마이즈 종합 모드", "en": "Performance optimization and UI customization" }
+    },
+    {
+      "id": "YCH",
+      "name": "Yqloss Client Harmony",
+      "author": "adofaiex",
+      "repo": "adofaiex/YqlossClientHarmony",
+      "asset": "^YCH.*\\.zip$",
+      "description": { "ko": "버그 수정·이펙트 제거·리플레이 녹화", "en": "Bug fixes, effect remover and replays" }
+    },
+    {
+      "id": "ADOFAI.EditorTweaks",
+      "name": "Editor Tweaks",
+      "author": "adofaiex",
+      "repo": "adofaiex/ADOFAI.EditorTweaks",
+      "asset": "^ADOFAI\\.EditorTweaks.*\\.zip$",
+      "description": { "ko": "레벨 에디터 편의 기능", "en": "Level editor quality-of-life tweaks" }
+    },
+    {
+      "id": "JALib",
+      "name": "JALib",
+      "author": "Jongyeol",
+      "repo": "Jongye0l/JALib",
+      "asset": "^JALib\\.zip$",
+      "prerelease": true,
+      "library": true,
+      "description": { "ko": "종열 모드들이 함께 쓰는 라이브러리 (필요할 때 자동 설치)", "en": "Shared library for Jongyeol's mods (installed automatically)" }
+    }
+  ]
+}
