@@ -1,85 +1,134 @@
-# ADOFAI Mod Helper (얼불춤 모드 도우미)
+# ADOFAI Mod Installer
 
-얼불춤(A Dance of Fire and Ice) 모드를 처음 쓰는 사람을 위한 Windows 프로그램입니다.
-Unity Mod Manager(UMM) 설치부터 모드 설치·업데이트·켜기/끄기까지 버튼으로 끝냅니다.
+얼불춤(A Dance of Fire and Ice) 모드 환경(UnityModManager, Doorstop, JALib, 모드)을 한 번에 설치하는 오픈소스 설치기입니다. 파일은 설치기에 넣어 두지 않고 **공식 배포처에서 직접 받아**, 카탈로그에 적힌 SHA-256과 일치할 때만 설치합니다.
 
-- **exe 하나**: 설치 없이 더블클릭으로 실행 (Windows 10 1903+ / 11, 기본 내장 .NET Framework 4.8 사용)
-- **UMM 자동 설치**: 공식 배포처(Dropbox)에서 최신 UMM을 받아 공식 설치기와 같은 방식(DoorstopProxy)으로 설치
-- **모드 원클릭 설치**: 모드 목록에서 고르면 GitHub 최신 릴리스를 받아 설치, 필요한 라이브러리(JALib 등)도 자동 설치
-- **관리**: 켜기/끄기, 삭제(휴지통), 일괄 업데이트, UMM 제거, 게임 업데이트 감지
-- **잘못된 설치 자동 정리**: `Mods/Mods/…` 중첩, 같은 모드 중복, 압축 안 푼 zip을 버튼 하나로 정리
-- **진단 정보 복사**: 디스코드 문의에 붙여넣을 상태 요약 (경로·UMM·모드 목록·로그)
-- 한국어 / English
+원래 JipperResourcePack 설치기처럼 **시작 → 폴더 선택 → 설치 요소 선택 → 설치 → 완료** 5단계 마법사입니다. (아래 화면은 미리보기입니다.)
 
-## 사용법
+| 시작 | 설치 요소 선택 |
+|---|---|
+| ![시작](docs/wizard-1-welcome.png) | ![설치 요소 선택](docs/wizard-3-select.png) |
+| **설치** | **완료** |
+| ![설치](docs/wizard-4-install.png) | ![완료](docs/wizard-5-finish.png) |
 
-1. [Releases](https://github.com/newmouse11/Nslookup_-ADOFAI-Mod-Install/releases)에서 `AdofaiModHelper.exe`를 받아 실행
-   - "Windows의 PC 보호" 창이 뜨면 **추가 정보 → 실행** (서명되지 않은 프로그램이라 처음에 뜰 수 있음)
-2. 마법사를 따라 **게임 찾기 → UMM 설치 → 모드 고르기**
-3. 게임에서 `Ctrl + F10`을 누르면 UMM 모드 메뉴가 열립니다
+## 기능
 
-게임이 켜져 있는 동안에는 모드 파일을 바꿀 수 없으니, 설치·켜기/끄기 전에 게임을 꺼 주세요.
+- 스팀에서 게임 폴더를 자동으로 찾고, 게임 빌드(r번호)를 보여줍니다. 폴더 선택 화면에서 경로 분석 결과(게임 발견, UnityModManager·Doorstop 상태)를 보여줍니다.
+- 이미 설치된 구성요소는 설치된 버전과 함께 표시하고, 필수 요소는 없을 때만 자동으로 선택합니다. 구성요소 위에 마우스를 올리면 만든 사람, 라이선스, 출처 링크가 나옵니다.
+- 구성요소를 체크해서 고릅니다. 필요한 것(의존)은 자동으로 켜지고, 서로 충돌하는 것(예: AdofaiTweaks 2.9.3 / 2.8.1)은 함께 켜지지 않습니다.
+- 전부 내려받아 검증한 **뒤에** 게임 폴더를 바꿉니다. 적용 중 실패하면 되돌립니다.
+- 덮어쓰는 파일은 백업하고, 설치 기록(영수증)을 남겨서 **제거**하면 기록에 있는 파일만 지우고 백업을 복원합니다. 전체 제거와 구성요소별 제거를 고를 수 있습니다.
+- 설치·제거 중에는 창을 닫을 수 없고(중간에 끊기는 것 방지), 게임이 켜져 있으면 시작하지 않습니다. 완료 화면에서 `얼불춤 실행`을 고를 수 있습니다.
+- 관리자 권한이 필요 없습니다.
 
-## 모드 목록 관리 (`catalog/mods.json`)
+## 설치되는 것
 
-프로그램은 실행할 때 이 저장소의 `catalog/mods.json`을 읽습니다. **이 파일만 고쳐서 push하면 도구를 다시 배포하지 않아도 목록이 바뀝니다.**
-(인터넷이 안 되거나 파일을 못 받으면 exe에 내장된 사본을 씁니다.)
+| 구성요소 | 버전 | 라이선스 | 기본 |
+|---|---|---|---|
+| UnityModManager | 0.33.2 | MIT | 필수 |
+| UnityDoorstop | 4.5.0 | LGPL-2.1 | 필수 |
+| JALib | 1.0.0.45 | BSD-3-Clause | 선택됨 |
+| JipperResourcePack | 1.5.2.0 | BSD-3-Clause | 선택됨 (JALib 필요) |
+| Jipper Key16B 패치 | 1.5.2.0 | BSD-3-Clause | (Jipper 필요) 공식 DLL을 수정 빌드로 교체 |
+| AdofaiTweaks | 2.9.3 / 2.8.1 | MIT | |
+| TogetherBootstrap | 1.5.5 | 미지정 | |
+| KeyboardChatterBlocker | 0.1.2 | 미지정 | |
 
-```jsonc
-{
-  "id": "TimingShow",                    // 모드 Info.json의 Id와 같아야 설치 여부·업데이트를 인식
-  "name": "TimingShow",                  // 화면에 보일 이름
-  "author": "SleepingCui",
-  "repo": "SleepingCui/TimingShow",      // GitHub 소유자/저장소
-  "asset": "^TimingShow\\.zip$",         // 릴리스 파일 중 UMM용 zip을 고르는 정규식
-  "prerelease": false,                   // 정식 릴리스가 없는 저장소(JALib)만 true
-  "library": false,                      // true면 마법사 목록에 숨기고 필요할 때만 자동 설치
-  "requires": ["JALib"],                 // 함께 설치할 모드 Id
-  "description": { "ko": "…", "en": "…" }
-}
+출처와 저작권은 [NOTICE.md](NOTICE.md), 바꾼 내용은 [CHANGES.md](CHANGES.md)를 보세요.
+
+## 사용
+
+`ADOFAI-Mod-Installer.exe`를 실행하고 `설치`를 누릅니다. 게임은 꺼 두세요.
+
+명령줄 옵션:
+
+| 옵션 | 설명 |
+|---|---|
+| `/silent` | 화면 없이 설치 (결과는 로그 파일에 기록) |
+| `/uninstall` | 설치 기록에 있는 파일만 제거하고 백업을 복원 |
+| `/target:"경로"` | 게임 폴더 (생략하면 자동 탐색) |
+| `/components:a,b` | 설치할 id (생략하면 기본 선택). 필수·의존 항목은 자동 추가 |
+| `/catalog:"파일"` | 내장 카탈로그 대신 쓸 카탈로그 |
+| `/list` | 카탈로그의 id 목록을 로그로 출력 |
+| `/log:"파일"` | 로그 파일 (기본 `%TEMP%\ADOFAI-Mod-Installer.log`) |
+| `/selftest` | 보안·롤백 자체 검사 (네트워크 불필요) |
+| `/shot:"png" /page:0~4` | 개발용 화면 미리보기를 PNG로 저장 (실제 다운로드·설치는 하지 않음) |
+
+종료 코드: 0 성공, 1 오류, 2 잘못된 인자 또는 게임 폴더 아님, 3 게임 실행 중, 4 다운로드·해시 검증 실패.
+
+## 빌드
+
+.NET SDK 8 이상이 필요합니다. 게임 파일은 필요 없습니다.
+
+```powershell
+dotnet build src\AdofaiModInstaller.csproj -c Release
 ```
 
-- UMM용이 아닌 MelonLoader 전용 모드는 넣지 마세요 (이 도구는 UMM만 지원).
-- 항목을 추가했으면 `dotnet run --project tests/SelfTest -c Release -- --online`으로 **실제로 받아서 Id가 맞는지** 확인할 수 있습니다.
+결과: `src\bin\Release\net48\ADOFAI-Mod-Installer.exe`. 태그(`v*`)를 푸시하면 GitHub Actions가 빌드·자체 검사를 거쳐 실행 파일과 SHA-256 체크섬을 릴리스에 올립니다.
 
-## 개발
+## 파란 창(Windows SmartScreen)이 뜰 때
 
-필요: Windows + .NET SDK (10.0.402로 검증, 빌드 대상은 .NET Framework 4.8)
+브라우저로 받은 exe를 처음 실행하면 "Windows에서 PC를 보호했습니다" 같은 **파란 창**이 뜰 수 있습니다. 이 설치기에 코드 서명이 아직 없고 이용자가 적어서 SmartScreen이 모르는 파일로 취급하기 때문이며, 악성으로 판정했다는 뜻은 아닙니다.
 
-```bash
-dotnet build src/AdofaiModHelper -c Release
-```
+1. 받은 파일이 릴리스의 `SHA256SUMS.txt`와 같은 파일인지 확인합니다.
 
-결과물: `src/AdofaiModHelper/bin/Release/net48/AdofaiModHelper.exe` (이 파일 하나만 배포)
+   ```powershell
+   Get-FileHash .\ADOFAI-Mod-Installer.exe -Algorithm SHA256
+   ```
 
-```bash
-dotnet run --project tests/SelfTest -c Release
-```
+2. 해시가 같으면 파란 창에서 `추가 정보` → `실행`을 누릅니다.
+3. 창이 뜨기 전에 없애려면 exe를 우클릭 → `속성` → 아래쪽 `차단 해제`에 체크 → `확인`을 누릅니다. (인터넷에서 받았다는 표식이 지워집니다.)
 
-자체 검사: 가짜 게임 폴더에서 UMM 설치·진단·제거, 모드 설치·켜기/끄기·중첩 정리 등을 확인합니다. `-- --online`을 붙이면 실제 UMM과 목록의 모든 모드를 받아 설치까지 확인합니다.
+해시가 다르거나 이 저장소의 릴리스가 아닌 곳에서 받았다면 실행하지 마세요. 경고를 없애려고 SmartScreen이나 백신을 끄지 마세요. 백신이 따로 경고하면 같은 방법으로 해시를 확인한 뒤 본인이 판단해 예외를 추가하세요.
+
+**코드 서명:** 아직 없습니다. 2026-10-26에 SignPath Foundation의 무료 오픈소스 코드 서명을 신청했지만, 프로젝트가 새롭고 이용자·외부 언급이 아직 부족하다는 이유로 이번에는 승인되지 않았습니다. 이용자가 늘면 다시 신청할 계획이며, 정책 초안은 [docs/CODE_SIGNING_POLICY.md](docs/CODE_SIGNING_POLICY.md)에 있습니다. 그때까지는 위의 해시 확인 방법을 쓰세요.
+
+## 카탈로그 수정 (구성요소 추가)
+
+`src/catalog.json`에 항목을 추가하고 다시 빌드하거나, `/catalog:`로 다른 파일을 지정합니다.
+
+| 필드 | 설명 |
+|---|---|
+| `id`, `name`, `version`, `author`, `license`, `homepage`, `note` | 표시와 출처 정보 |
+| `url`, `sha256`, `size` | 받을 주소(https)와 정확한 해시·바이트 수. 하나라도 다르면 설치 중단 |
+| `kind` | `umm` · `doorstop` · `mod`(`Mods\<dir>`에 설치) · `file`(`path`에 파일 하나) |
+| `dir`, `path` | `mod`의 폴더 이름, `file`의 게임 폴더 기준 상대 경로 |
+| `required`, `defaultOn` | 필수 / 기본 선택 |
+| `requires`, `conflicts` | 의존 / 충돌하는 id |
+
+해시와 크기는 `tools\catalog-entry.ps1 -File 받은파일.zip -Url ... -Id ... -Name ... -Version ...`으로 계산할 수 있습니다. GitHub 릴리스는 API(`assets[].digest`)의 값과도 대조하세요.
+
+`mod`의 zip은 `Info.json`이 루트에 있거나, 최상위 폴더 하나 안에 있어야 합니다.
+
+## 검증 상태
+
+- 자체 검사(`/selftest`) 40개 통과: 카탈로그 검증, 경로 이탈 거부, zip 구조 처리, 롤백·제거(부분 제거 포함), 해시·크기 검증, 같은 경로 처리, 설치된 구성요소 판단.
+- 마법사 화면을 UI 자동화로 실제 클릭해서 시작 → 폴더 → 요소 선택 → 설치 → 완료 → 종료(설치), 제거 → 확인 → 완료 → 종료(제거) 전 과정이 가짜 게임 폴더에서 끝까지 동작하는 것을 확인했습니다.
+- Key16B 패치 구성요소: 새 설치와 공식 Jipper 위에 교체 설치 모두 DLL이 정확히 들어가고, 제거하면 파일이 남지 않는 것을 확인했습니다.
+- 실행 파일 자리표시자만 있는 가짜 게임 폴더에 공식 배포처에서 실제로 받아 설치, 재설치, 제거, 기존 파일 백업·복원, 해시 불일치 거부를 확인했습니다. 설치된 `winhttp.dll`, `doorstop_config.ini`, `Config.xml`은 실제로 동작 중인 환경의 파일과 바이트 단위로 같았습니다.
+- 확인하지 못한 것: 설치된 모드가 **실제 게임에서 로드되는지**, 그리고 GitHub Actions 워크플로 실행.
+- UnityModManager는 배포처의 파일(현재 0.33.2)을 그대로 설치합니다. 이전 버전(0.32.x)에서 확인된 조합과 다를 수 있습니다.
+
+## Key16B 패치
+
+JipperResourcePack 키뷰어의 스타일 줄에 `Key16B` 버튼(두 번째 16키 프리셋, 키 배치를 따로 저장)을 추가한 수정 빌드입니다. 설치기에서 `Jipper Key16B 패치`를 체크하면 공식 DLL을 이 빌드로 교체하고, 제거하면 되돌립니다.
 
 | 위치 | 내용 |
 |---|---|
-| `src/AdofaiModHelper/Core/` | 화면과 무관한 로직 (게임 탐지, UMM 설치, 모드 관리, 목록, 진단) |
-| `src/AdofaiModHelper/MainWindow.xaml(.cs)` | 마법사와 메인 화면 |
-| `src/AdofaiModHelper/Theme.xaml` | 색·글꼴·컨트롤 스타일 |
-| `src/AdofaiModHelper/Strings.*.xaml` | 한/영 문구 |
-| `catalog/mods.json` | 원클릭 설치 모드 목록 |
+| `dist/jipper-key16b/` | 수정 DLL(`JipperResourcePack-1.5.2.0-Key16B.dll`)과 라이선스 고지 |
+| `patches/` | 기능 변경(`jipper-key16b.patch`)과 빌드 조정(`jipper-local-build-tweaks.patch`) |
+| `tools/jipper-build/` | 직접 다시 빌드하는 도구와 절차 |
 
-## 동작 방식 (참고)
+공식 빌드가 아니며 1.5.2.0 전용입니다. 바뀐 내용 전부와 검증 결과는 [CHANGES.md](CHANGES.md)에 있습니다.
 
-UMM 공식 설치기(`UnityModManagerApp/Form.cs`)의 DoorstopProxy 설치를 그대로 재현합니다.
+## 저장소 구성
 
-- `게임\winhttp.dll` ← UMM zip의 `winhttp_x64.dll`(또는 x86) / `게임\doorstop_config.ini`
-- `게임\A Dance of Fire and Ice_Data\Managed\UnityModManager\` ← `UnityModManager.dll`, `0Harmony.dll`, `dnlib.dll`, `UnityModManager.xml`, `Config.xml`
-- 모드를 끄면 그 모드의 dll(Info.json의 `AssemblyName`)을 `이름.dll.disabled`로 바꾸고, UMM의 `Params.xml`도 꺼짐으로 맞춥니다. 켜면 원래 이름으로 되돌립니다. 꺼 둔 모드는 업데이트해도 꺼진 채로 유지됩니다.
-- 지우는 것은 전부 휴지통으로 보냅니다. 세이브 폴더(`User`)는 건드리지 않습니다.
+| 경로 | 내용 |
+|---|---|
+| `src/` | 설치기 소스와 내장 카탈로그(`catalog.json`) |
+| `dist/` | Key16B 수정 DLL |
+| `patches/`, `tools/` | 패치, 카탈로그 항목 계산 스크립트, DLL 재빌드 도구 |
+| `NOTICE.md`, `CHANGES.md`, `SECURITY.md`, `LICENSE` | 출처·저작권, 바꾼 내용, 보안, 라이선스 |
 
 ## 라이선스
 
-- 이 도구의 코드: MIT ([`LICENSE`](LICENSE))
-- v1.x 릴리스는 이전 설치기(ADOFAI-Mod-Installer)이고, v2.0.0부터 이 도구로 바뀌었습니다. 이전 코드는 저장소 기록과 v1.x 태그에 남아 있습니다.
-- 이 도구에 포함된 글꼴: IBM Plex Sans, Noto Sans KR (SIL Open Font License 1.1) — [`licenses/`](licenses/)
-- UMM은 포함하지 않고 실행 시 공식 배포처에서 받습니다 (UMM: MIT, newman55).
-- 모드는 각 제작자의 저장소에서 직접 받으며, 각 모드의 라이선스를 따릅니다.
-- 7th Beat Games와 무관한 비공식 도구입니다. 모드 사용으로 생긴 문제는 개발사가 책임지지 않으니, 게임이 안 켜지면 먼저 모드를 끄거나 UMM을 제거해 보세요.
+[MIT](LICENSE) © 2026 newmouse11. 패치는 원본(BSD-3-Clause)을 따릅니다.

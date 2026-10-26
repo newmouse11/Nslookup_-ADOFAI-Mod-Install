@@ -19,36 +19,42 @@ jobs:
 
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 8.0.x
 
-      # 도구의 '새 버전 알림'은 릴리스 태그와 exe 버전을 비교하므로 둘이 다르면 릴리스하지 않는다
-      - name: Tag matches app version
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Catalog matches the committed Key16B DLL
         shell: pwsh
         run: |
-          $v = ([xml](Get-Content src/AdofaiModHelper/AdofaiModHelper.csproj -Raw)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
-          if ("v$v" -ne $env:GITHUB_REF_NAME) { throw "tag $env:GITHUB_REF_NAME does not match csproj Version $v" }
+          $c = (Get-Content src/catalog.json -Raw -Encoding UTF8 | ConvertFrom-Json).components | Where-Object id -eq 'jipper-key16b'
+          $f = Get-Item dist/jipper-key16b/JipperResourcePack-1.5.2.0-Key16B.dll
+          $h = (Get-FileHash $f -Algorithm SHA256).Hash.ToLower()
+          if ($h -ne $c.sha256.ToLower() -or $f.Length -ne $c.size) { throw "catalog.json does not match the DLL (sha256 $h, size $($f.Length))" }
 
       - name: Build
         shell: pwsh
-        run: dotnet build src/AdofaiModHelper -c Release -o out
+        run: dotnet build src/AdofaiModInstaller.csproj -c Release -o out
 
-      - name: Self test (offline, no game files needed)
+      - name: Self test (no game files needed)
         shell: pwsh
-        run: dotnet run --project tests/SelfTest -c Release
+        run: |
+          $p = Start-Process out/ADOFAI-Mod-Installer.exe -ArgumentList '/selftest','/log:selftest.log' -PassThru
+          if (-not $p.WaitForExit(120000)) { $p.Kill(); throw 'selftest timeout' }
+          Get-Content selftest.log
+          if ($p.ExitCode -ne 0) { throw "selftest failed ($($p.ExitCode))" }
 
       - name: Checksums
         shell: pwsh
         run: |
-          "$((Get-FileHash out/AdofaiModHelper.exe -Algorithm SHA256).Hash.ToLower())  AdofaiModHelper.exe" |
+          'out/ADOFAI-Mod-Installer.exe', 'dist/jipper-key16b/JipperResourcePack-1.5.2.0-Key16B.dll' |
+            ForEach-Object { "$((Get-FileHash $_ -Algorithm SHA256).Hash.ToLower())  $(Split-Path $_ -Leaf)" } |
             Set-Content out/SHA256SUMS.txt
 
       - uses: actions/upload-artifact@v4
         with:
-          name: AdofaiModHelper
+          name: ADOFAI-Mod-Installer
           path: |
-            out/AdofaiModHelper.exe
+            out/ADOFAI-Mod-Installer.exe
             out/SHA256SUMS.txt
+            dist/jipper-key16b/*
 
       - name: Release (tags only)
         if: startsWith(github.ref, 'refs/tags/v')
@@ -58,13 +64,21 @@ jobs:
           body: |
             ## 받는 파일
 
-            - `AdofaiModHelper.exe`: 얼불춤 모드 도우미 (Windows 10/11, 설치 없이 실행)
-            - `SHA256SUMS.txt`: exe의 SHA-256. 확인: `certutil -hashfile AdofaiModHelper.exe SHA256`
+            - `ADOFAI-Mod-Installer.exe`: 설치기 (Windows, .NET Framework 4.8 필요 — Windows 10/11에 기본 포함)
+            - `JipperResourcePack-1.5.2.0-Key16B.dll`: 설치기의 `Jipper Key16B 패치`가 받아 가는 수정 DLL (직접 받을 필요 없음). 공식 빌드가 아니며 라이선스 고지는 `NOTICE.txt`
+            - `SHA256SUMS.txt`: 위 두 파일의 SHA-256. 확인: `certutil -hashfile <파일> SHA256`
 
             ## 알아둘 점
 
-            - **파란 창이 뜨면:** 코드 서명이 없어서 처음 실행할 때 Windows SmartScreen("Windows에서 PC를 보호했습니다")이 뜰 수 있습니다. 악성 판정이 아니라 "모르는 파일"이라는 뜻입니다. 해시가 `SHA256SUMS.txt`와 같으면 `추가 정보` → `실행`을 누르세요.
-            - UMM과 모드는 exe에 포함되지 않고, 실행할 때 공식 배포처(UMM: Dropbox, 모드: 각 GitHub 릴리스)에서 받습니다.
+            - **파란 창이 뜨면:** 코드 서명이 아직 없고 이용자가 적어서 브라우저로 받은 exe를 처음 실행할 때 Windows SmartScreen("Windows에서 PC를 보호했습니다")이 뜰 수 있습니다. 악성 판정이 아니라 "모르는 파일"이라는 뜻입니다.
+              1. `Get-FileHash .\ADOFAI-Mod-Installer.exe` 값이 `SHA256SUMS.txt`와 같은지 확인합니다.
+              2. 같으면 `추가 정보` → `실행`을 누릅니다. 창이 뜨기 전에 없애려면 exe 우클릭 → `속성` → `차단 해제` → `확인`.
+              3. 해시가 다르면 실행하지 마세요. 자세한 내용: [README](https://github.com/newmouse11/Nslookup_-ADOFAI-Mod-Install#파란-창windows-smartscreen이-뜰-때)
+            - 코드 서명은 SignPath Foundation 무료 오픈소스 서명을 신청할 준비 중이며 아직 적용되지 않았습니다. 백신이 경고하면 같은 방법으로 해시를 확인하세요. 소스와 빌드 기록(Actions)은 이 저장소에서 확인할 수 있습니다.
+            - 설치기는 모드 파일을 포함하지 않고 공식 배포처에서 받아 SHA-256을 확인한 뒤 설치합니다. 출처와 라이선스는 `NOTICE.md`, 바꾼 내용 전부는 `CHANGES.md`를 보세요.
+            - UnityModManager는 배포처의 현재 파일(0.33.2)을 설치합니다. 설치한 모드가 실제 게임에서 로드되는지는 아직 확인하지 못했습니다.
           files: |
-            out/AdofaiModHelper.exe
+            out/ADOFAI-Mod-Installer.exe
             out/SHA256SUMS.txt
+            dist/jipper-key16b/JipperResourcePack-1.5.2.0-Key16B.dll
+            dist/jipper-key16b/NOTICE.txt

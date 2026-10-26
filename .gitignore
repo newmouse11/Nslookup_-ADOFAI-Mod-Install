@@ -1,5 +1,8 @@
+﻿# 빌드 결과
 bin/
 obj/
-*.user
-.vs/
-.env
+out/
+*.exe
+
+# 로그
+*.log
