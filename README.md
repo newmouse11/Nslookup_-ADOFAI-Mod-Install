@@ -72,7 +72,7 @@ UMM 공식 설치기(`UnityModManagerApp/Form.cs`)의 DoorstopProxy 설치를 �
 
 - `게임\winhttp.dll` ← UMM zip의 `winhttp_x64.dll`(또는 x86) / `게임\doorstop_config.ini`
 - `게임\A Dance of Fire and Ice_Data\Managed\UnityModManager\` ← `UnityModManager.dll`, `0Harmony.dll`, `dnlib.dll`, `UnityModManager.xml`, `Config.xml`
-- 모드 켜기/끄기는 UMM이 쓰는 `Params.xml`의 `<Mod Id Enabled>`만 바꿉니다.
+- 모드를 끄면 그 모드의 dll(Info.json의 `AssemblyName`)을 `이름.dll.disabled`로 바꾸고, UMM의 `Params.xml`도 꺼짐으로 맞춥니다. 켜면 원래 이름으로 되돌립니다. 꺼 둔 모드는 업데이트해도 꺼진 채로 유지됩니다.
 - 지우는 것은 전부 휴지통으로 보냅니다. 세이브 폴더(`User`)는 건드리지 않습니다.
 
 ## 라이선스

@@ -27,7 +27,7 @@ static class Program
             Run("게임 폴더 인식", TestGameLocate);
             Run("UMM 설치·진단·제거", TestUmm);
             Run("Assembly 방식 흔적 원복", TestAssemblyRestore);
-            Run("모드 켜기/끄기 (Params.xml)", TestToggle);
+            Run("모드 켜기/끄기 (dll 이름 + Params.xml)", TestToggle);
             Run("zip 설치와 설정 보존", TestInstallZip);
             Run("잘못된 설치 자동 정리", TestFixProblems);
             Run("모드 목록 파싱·의존성", TestCatalog);
@@ -143,7 +143,7 @@ static class Program
         status = Umm.Detect(game);
         Assert(status.State == UmmState.Broken && status.Problems.Contains("P.DoorstopMissing"), "프록시가 지워지면 Broken");
 
-        Mods.SetEnabled(game, new[] { "Keep" }, false);
+        Mods.SetParamsEnabled(game, new[] { "Keep" }, false);
         Umm.InstallFromExtracted(game, MakeFakeInstaller()); // 복구 = 재설치
         Assert(Umm.Detect(game).State == UmmState.Installed, "재설치로 복구");
 
@@ -171,26 +171,64 @@ static class Program
         Assert(Umm.Detect(game).State == UmmState.Installed, "원복 후 Doorstop으로 정상 설치");
     }
 
+    static InstalledMod[] Pick(Game game, string id) => Mods.Scan(game).Mods.Where(m => m.Id == id).ToArray();
+    static bool IsOn(Game game, string id) => Mods.Scan(game).Mods.First(m => m.Id == id).Enabled;
+
     static void TestToggle()
     {
         var game = MakeGame("toggle");
-        WriteMod(Path.Combine(game.ModsDir, "A"), "A", "1.0");
-        WriteMod(Path.Combine(game.ModsDir, "B"), "B", "1.0");
-        Assert(Mods.Scan(game).Mods.All(m => m.Enabled), "Params.xml이 없으면 모두 켜짐");
+        var aDir = Path.Combine(game.ModsDir, "A");
+        var aDll = Path.Combine(aDir, "A.Core.dll");
+        WriteMod(aDir, "A", "1.0", ", \"AssemblyName\": \"A.Core.dll\"");
+        File.WriteAllText(aDll, "v1");
+        var bDll = Path.Combine(game.ModsDir, "B", "B.dll");
+        WriteMod(Path.Combine(game.ModsDir, "B"), "B", "1.0");               // AssemblyName 없음 → UMM 규칙대로 <Id>.dll
+        File.WriteAllText(bDll, "b");
+        WriteMod(Path.Combine(game.ModsDir, "C"), "C", "1.0");               // dll 없는 콘텐츠 모드
+        WriteMod(Path.Combine(game.ModsDir, "Evil"), "Evil", "1.0", ", \"AssemblyName\": \"..\\\\B\\\\B.dll\"");
+        Assert(Mods.Scan(game).Mods.All(m => m.Enabled), "처음엔 모두 켜짐");
 
-        Mods.SetEnabled(game, new[] { "A" }, false);
-        var scan = Mods.Scan(game);
-        Assert(!scan.Mods.First(m => m.Id == "A").Enabled && scan.Mods.First(m => m.Id == "B").Enabled, "A만 꺼짐");
+        Mods.SetEnabled(game, Pick(game, "A"), false);
+        Assert(!File.Exists(aDll) && File.Exists(aDll + ".disabled"), "끄면 dll이 .dll.disabled로");
+        Assert(File.ReadAllText(Path.Combine(game.UmmDir, "Params.xml")).Contains("Id=\"A\" Enabled=\"false\""), "Params.xml도 꺼짐으로");
+        Assert(!IsOn(game, "A") && IsOn(game, "B"), "A만 꺼짐");
+
+        // 꺼 둔 모드를 업데이트해도 꺼진 채로, 새 dll이 .disabled로 들어간다
+        var v2 = MakeZip("a2.zip", s =>
+        {
+            WriteMod(Path.Combine(s, "A"), "A", "2.0", ", \"AssemblyName\": \"A.Core.dll\"");
+            File.WriteAllText(Path.Combine(s, "A", "A.Core.dll"), "v2");
+        });
+        Mods.InstallZip(game, v2);
+        Assert(!File.Exists(aDll) && File.ReadAllText(aDll + ".disabled") == "v2", "업데이트 후에도 꺼짐 유지 (새 버전)");
+
+        Mods.SetEnabled(game, Pick(game, "A"), true);
+        Assert(File.ReadAllText(aDll) == "v2" && !File.Exists(aDll + ".disabled") && IsOn(game, "A"), "켜면 원래 이름으로");
+
+        Mods.SetEnabled(game, Pick(game, "B"), false);
+        Assert(File.Exists(bDll + ".disabled") && !IsOn(game, "B"), "AssemblyName 없으면 <Id>.dll을 끔");
+        Mods.SetEnabled(game, Pick(game, "B"), true);
+
+        Mods.SetEnabled(game, Pick(game, "C"), false);
+        Assert(!IsOn(game, "C"), "dll 없는 모드는 Params.xml로만 끔");
+
+        Mods.SetEnabled(game, Pick(game, "Evil"), false);
+        Assert(File.Exists(bDll), "모드 폴더 밖을 가리키는 AssemblyName은 건드리지 않음");
+
+        // 게임 안 UMM 메뉴에서 꺼 둔 모드(Params만 false)도 도구에서 켤 수 있다
+        Mods.SetParamsEnabled(game, new[] { "B" }, false);
+        Assert(!IsOn(game, "B"), "UMM 메뉴에서 끈 상태 반영");
+        Mods.SetEnabled(game, Pick(game, "B"), true);
+        Assert(IsOn(game, "B"), "도구에서 다시 켜짐");
 
         // 실제 UMM이 쓴 형식(Hotkey 포함)도 다른 값은 보존한 채 Enabled만 바뀌어야 한다
         File.WriteAllText(Path.Combine(game.UmmDir, "Params.xml"),
             "<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<Param xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">" +
             "<Hotkey><keyCode>None</keyCode><modifiers>0</modifiers></Hotkey><CheckUpdates>2</CheckUpdates><UIScale>1.5</UIScale>" +
             "<ModParams><Mod Id=\"B\" Enabled=\"true\"><Hotkey><keyCode>F5</keyCode><modifiers>0</modifiers></Hotkey></Mod></ModParams></Param>");
-        Mods.SetEnabled(game, new[] { "B" }, false);
+        Mods.SetEnabled(game, Pick(game, "B"), false);
         var xml = File.ReadAllText(Path.Combine(game.UmmDir, "Params.xml"));
         Assert(xml.Contains("<UIScale>1.5</UIScale>") && xml.Contains("<keyCode>F5</keyCode>") && xml.Contains("Enabled=\"false\""), "다른 설정 보존");
-        Assert(!Mods.Scan(game).Mods.First(m => m.Id == "B").Enabled, "B 꺼짐 반영");
     }
 
     static string MakeZip(string name, Action<string> fill)

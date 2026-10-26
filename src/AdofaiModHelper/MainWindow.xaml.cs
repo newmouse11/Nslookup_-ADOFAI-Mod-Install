@@ -415,9 +415,9 @@ namespace AdofaiModHelper
 
         async Task DisableAllAsync()
         {
-            var ids = scan?.Mods.Select(m => m.Id).ToList() ?? new List<string>();
-            if (ids.Count == 0) return;
-            if (await RunAsync(() => Task.Run(() => Mods.SetEnabled(game, ids, false))))
+            var mods = scan?.Mods.ToList() ?? new List<InstalledMod>();
+            if (mods.Count == 0) return;
+            if (await RunAsync(() => Task.Run(() => Mods.SetEnabled(game, mods, false))))
                 Toast(App.T("S.T.AllDisabled"));
         }
 
@@ -453,17 +453,25 @@ namespace AdofaiModHelper
             var box = (CheckBox)sender;
             if (!(box.DataContext is ModRow row)) return;
             bool want = box.IsChecked == true;
-            bool ok = await RunAsync(() => Task.Run(() => Mods.SetEnabled(game, new[] { row.Mod.Id }, want)));
+            bool ok = await RunAsync(() => Task.Run(() => Mods.SetEnabled(game, new[] { row.Mod }, want)));
             if (!ok)
             {
                 // 실패하면 스위치를 원래 상태로 되돌린다 (바인딩은 유지)
                 box.SetCurrentValue(ToggleButton.IsCheckedProperty, !want);
                 return;
             }
-            // UMM은 켜진 모드가 Requirements로 요구하는 모드를 게임 시작 시 강제로 켠다
-            if (!want && scan != null && scan.Mods.Any(m => m.Enabled && m.Requirements.Any(r => r.StartsWith(row.Mod.Id, StringComparison.OrdinalIgnoreCase))))
-                Toast(App.T("S.T.ForcedOn", row.Name), true);
+            // dll을 꺼 버리면 이걸 필요로 하는 켜진 모드(JALib → 지퍼팩 등)도 같이 동작하지 않는다
+            if (!want && scan != null)
+            {
+                var dependents = scan.Mods.Where(m => m.Enabled && DependsOn(m, row.Mod.Id)).Select(m => m.DisplayName).ToList();
+                if (dependents.Count > 0) Toast(App.T("S.T.ForcedOn", row.Name, string.Join(", ", dependents)), true);
+            }
         }
+
+        // Info.json의 Requirements 또는 모드 목록의 requires (지퍼팩은 Info.json에 JALib을 LoadAfter로만 적어 둠)
+        bool DependsOn(InstalledMod mod, string id) =>
+            mod.Requirements.Any(r => r.StartsWith(id, StringComparison.OrdinalIgnoreCase))
+            || (CatalogFor(mod)?.Requires.Contains(id, StringComparer.OrdinalIgnoreCase) ?? false);
 
         async void OnRemove(object sender, RoutedEventArgs e)
         {

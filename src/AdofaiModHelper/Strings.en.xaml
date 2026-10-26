@@ -106,7 +106,7 @@
   <sys:String x:Key="S.T.RateLimit">GitHub request limit reached. Try again after {0}.</sys:String>
   <sys:String x:Key="S.T.Offline">Can't reach the internet. Check your connection.</sys:String>
   <sys:String x:Key="S.T.NoUpdates">Everything is up to date</sys:String>
-  <sys:String x:Key="S.T.ForcedOn">{0} is needed by another enabled mod, so the game may turn it back on</sys:String>
+  <sys:String x:Key="S.T.ForcedOn">{0} is off. {1} needs it and may stop working too</sys:String>
   <sys:String x:Key="S.T.ClipboardBusy">Clipboard is busy. Try again in a moment.</sys:String>
   <sys:String x:Key="S.T.LaunchFailed">Couldn't launch the game</sys:String>
 </ResourceDictionary>

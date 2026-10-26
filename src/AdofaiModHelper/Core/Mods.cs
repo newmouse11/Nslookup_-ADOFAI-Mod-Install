@@ -16,6 +16,8 @@ namespace AdofaiModHelper.Core
         public string Version { get; set; }
         public string Folder { get; set; }
         public string[] Requirements { get; set; } = new string[0];
+        // UMM이 불러오는 모드 dll의 전체 경로 (dll 없는 콘텐츠 모드는 null)
+        public string Dll { get; set; }
         public bool Enabled { get; set; } = true;
     }
 
@@ -39,6 +41,7 @@ namespace AdofaiModHelper.Core
     public static class Mods
     {
         const string InfoFile = "Info.json"; // 윈도우 파일시스템은 대소문자 무시 → info.json도 잡힌다
+        public const string DisabledSuffix = ".disabled";
         static readonly Regex RequirementVersion = new Regex(@"^(.*)-(\d+\.\d+\.\d+).*$");
 
         public static ScanResult Scan(Game game)
@@ -67,7 +70,7 @@ namespace AdofaiModHelper.Core
                     result.Problems.Add(new ModProblem { Kind = ProblemKind.DuplicateId, Path = dir, ModId = mod.Id });
                     continue;
                 }
-                mod.Enabled = !enabled.TryGetValue(mod.Id, out var on) || on;
+                mod.Enabled = !IsDllDisabled(mod) && (!enabled.TryGetValue(mod.Id, out var on) || on);
                 seen[mod.Id] = mod;
                 result.Mods.Add(mod);
             }
@@ -114,6 +117,7 @@ namespace AdofaiModHelper.Core
                     Version = Json.Str(info, "Version") ?? "",
                     Folder = dir,
                     Requirements = Json.StrArray(info, "Requirements"),
+                    Dll = ResolveDll(dir, Json.Str(info, "AssemblyName"), id),
                 };
             }
             catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException || ex is IOException)
@@ -123,6 +127,34 @@ namespace AdofaiModHelper.Core
                 return null;
             }
         }
+
+        // UMM 규칙: AssemblyName이 비었으면 <Id>.dll이 있을 때 그것을 쓴다.
+        // Info.json은 외부 입력이라 모드 폴더 밖을 가리키는 경로("..\..\x.dll")는 무시한다
+        static string ResolveDll(string dir, string assemblyName, string id)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(assemblyName))
+                {
+                    var byId = Path.Combine(dir, id + ".dll");
+                    if (!File.Exists(byId) && !File.Exists(byId + DisabledSuffix)) return null;
+                    assemblyName = id + ".dll";
+                }
+                var root = Path.GetFullPath(dir).TrimEnd('\\') + "\\";
+                var full = Path.GetFullPath(Path.Combine(dir, assemblyName));
+                if (full.StartsWith(root, StringComparison.OrdinalIgnoreCase)) return full;
+                Log.Warn($"모드 폴더 밖을 가리키는 AssemblyName 무시: {dir} → {assemblyName}");
+                return null;
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is NotSupportedException || ex is PathTooLongException)
+            {
+                Log.Warn($"AssemblyName 경로 해석 실패: {dir} → {assemblyName}", ex);
+                return null;
+            }
+        }
+
+        static bool IsDllDisabled(InstalledMod mod) =>
+            mod.Dll != null && !File.Exists(mod.Dll) && File.Exists(mod.Dll + DisabledSuffix);
 
         // ---- 켜기/끄기: UMM은 <Managed>\UnityModManager\Params.xml의 <Mod Id Enabled>를 읽는다 ----
 
@@ -148,8 +180,31 @@ namespace AdofaiModHelper.Core
             return states;
         }
 
+        // 끄기 = 모드 dll을 <이름>.dll.disabled로 바꿔 UMM이 아예 못 불러오게 한다.
+        // Params.xml도 같이 맞춰서 UMM이 'dll 없음' 오류를 내지 않게 하고, 게임 안 메뉴에서 꺼 둔 모드도 여기서 켤 수 있게 한다
+        public static void SetEnabled(Game game, IEnumerable<InstalledMod> mods, bool enabled)
+        {
+            var list = mods.ToList();
+            foreach (var mod in list.Where(m => m.Dll != null)) RenameDll(mod.Dll, enabled);
+            SetParamsEnabled(game, list.Select(m => m.Id), enabled);
+        }
+
+        static void RenameDll(string dll, bool enabled)
+        {
+            var disabled = dll + DisabledSuffix;
+            if (enabled && !File.Exists(dll) && File.Exists(disabled))
+            {
+                File.Move(disabled, dll);
+            }
+            else if (!enabled && File.Exists(dll))
+            {
+                if (File.Exists(disabled)) File.Delete(disabled); // 예전에 꺼 둔 구버전 사본이 남아 있던 경우
+                File.Move(dll, disabled);
+            }
+        }
+
         // 게임이 꺼져 있을 때만 호출해야 한다: UMM이 게임 종료 시 메모리 상태로 파일을 덮어쓴다
-        public static void SetEnabled(Game game, IEnumerable<string> modIds, bool enabled)
+        internal static void SetParamsEnabled(Game game, IEnumerable<string> modIds, bool enabled)
         {
             var path = ParamsPath(game);
             XDocument doc;
@@ -196,10 +251,14 @@ namespace AdofaiModHelper.Core
                 var mod = ReadMod(source) ?? throw new InvalidDataException("Info.json 형식 오류: " + Path.GetFileName(zipPath));
 
                 var existing = Scan(game).Mods.FirstOrDefault(m => string.Equals(m.Id, mod.Id, StringComparison.OrdinalIgnoreCase));
+                bool keepDisabled = existing != null && IsDllDisabled(existing);
                 var target = existing?.Folder ?? FreeFolderFor(game, mod.Id);
                 Files.CopyDirectory(source, target);
-                Log.Info($"모드 설치: {mod.Id} {mod.Version} → {target}");
-                return ReadMod(target);
+                var installed = ReadMod(target);
+                // 꺼 둔 모드는 업데이트해도 꺼진 채로 둔다 (새 dll도 .disabled로)
+                if (keepDisabled && installed?.Dll != null) RenameDll(installed.Dll, false);
+                Log.Info($"모드 설치: {mod.Id} {mod.Version} → {target}" + (keepDisabled ? " (꺼진 상태 유지)" : ""));
+                return installed;
             }
             finally
             {

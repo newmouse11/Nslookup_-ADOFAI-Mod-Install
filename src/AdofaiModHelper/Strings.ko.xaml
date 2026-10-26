@@ -113,7 +113,7 @@
   <sys:String x:Key="S.T.RateLimit">GitHub 요청 한도에 걸렸어요. {0} 이후에 다시 시도해 주세요.</sys:String>
   <sys:String x:Key="S.T.Offline">인터넷에 연결할 수 없어요. 연결을 확인해 주세요.</sys:String>
   <sys:String x:Key="S.T.NoUpdates">모두 최신 버전이에요</sys:String>
-  <sys:String x:Key="S.T.ForcedOn">{0}은(는) 켜진 다른 모드가 필요로 해서 게임에서 다시 켜질 수 있어요</sys:String>
+  <sys:String x:Key="S.T.ForcedOn">{0}을(를) 껐어요. 이 모드가 필요한 {1}도 동작하지 않을 수 있어요</sys:String>
   <sys:String x:Key="S.T.ClipboardBusy">클립보드를 쓸 수 없어요. 잠시 후 다시 눌러 주세요.</sys:String>
   <sys:String x:Key="S.T.LaunchFailed">게임을 실행하지 못했어요</sys:String>
 </ResourceDictionary>
